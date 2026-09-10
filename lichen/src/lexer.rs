@@ -1,3 +1,34 @@
+pub mod types{
+  #![allow(unused)]
+  pub struct LexerCartegories {
+    keyword: TokenLiteral,
+    separator: TokenSeparator,
+    literal: TokenLiteral,
+    operator: TokenOperator,
+  }
+  enum TokenKeyword{
+    Function,
+    Enum,
+    Struct,
+  }
+  enum TokenSeparator {
+    OpenParent,
+    CloseParent,
+    SemiColon,
+    LeftCurl,
+    RightCurl,
+  }
+  enum TokenLiteral {
+    True,
+    False,
+  }
+  enum TokenOperator {
+    Add,
+    Sub,
+    Mul,
+    Div,
+  }
+}
 pub mod checker {
   /* Determine the next plausible value and then match to the one needed */
   fn get_nxt_value(chars: Vec<char>, i: usize)  {
