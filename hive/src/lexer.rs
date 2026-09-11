@@ -1,11 +1,13 @@
 #![allow(unused)]
 pub mod types{
   pub struct LexerCartegories {
-    keyword: TokenKeyword, /* 3rd: */
+    keyword: TokenKeyword, /* 3rd: PAUSE -- ALMOST DONE */
     separator: TokenSeparator, /* 1st: PAUSE -- ALMOST DONE*/
-    literal: TokenLiteral,
+    literal: TokenLiteral, /* LATER ON WHEN NEEDED */
     operator: TokenOperator, /* 2nd: PAUSE -- ALMOST DONE */
+    identifier: TokenIdentifier,
   }
+  
   #[derive(Debug)]
   pub enum TokenKeyword{
     Function,
@@ -32,6 +34,7 @@ pub mod types{
     Div,
     Equ,
   }
+  struct TokenIdentifier;
 }
 
 pub mod eval {
@@ -80,17 +83,16 @@ pub mod eval {
   }
 }
 
-pub mod checker {
-  use crate::lexer::{eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep,}, types::TokenKeyword};
+pub mod tokenizer {
+  use crate::lexer::{
+    eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
+    types::{TokenKeyword, LexerCartegories}};
 
-  pub fn check_values(chars: Vec<char>) {
+  pub fn tokenize_values(chars: Vec<char>) {
     let mut value: Vec<char> = Vec::new();
     
     for (i, char) in chars.iter().enumerate() {
-      if char.is_numeric() {
-        //get_nxt_value(chars.clone(), i);
-        println!("Digit character: {}, {}", char, i);
-      } else if char.is_alphabetic() {
+      if char.is_alphabetic() {
         value.push(*char);
       } else if char.is_whitespace(){
         if value.is_empty(){
@@ -105,11 +107,11 @@ pub mod checker {
             None => println!("Unknown / Not done for"),
           }
         }
-      }else if is_token_sep(char){
+      } else if is_token_sep(char){
         println!("Found TokenSeparator: {:?}",comp_pun(char));
       } else if is_token_oper(char){
         println!("Found TokenOperator: {:?}", comp_operator(char));
-      }else {
+      } else {
         println!("Found smth else: {:?}", char);
       }
     }

@@ -1,6 +1,6 @@
 use std::{env, fs};
 
-use crate::lexer::checker;
+use crate::lexer::tokenizer;
 mod lexer;
 
 fn get_file() -> String {
@@ -17,5 +17,5 @@ fn to_char(file: String) -> Vec<char> {
 fn main() {
     let file = get_file();
     let chars = to_char(file);
-    checker::check_values(chars);
+    tokenizer::tokenize_values(chars);
 }
