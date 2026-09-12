@@ -37,7 +37,8 @@ pub mod types{
     Equ,
   }
   #[derive(Debug)]
-  pub struct TokenIdentifier;
+  pub struct TokenIdentifier(pub String);
+  
 }
 
 pub mod eval {
@@ -131,7 +132,7 @@ pub mod checker {
 pub mod tokenizer {
   use crate::lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
-    types::{LexerCartegories, TokenSeparator, TokenKeyword, TokenOperator}};
+    types::{LexerCartegories, TokenSeparator, TokenKeyword, TokenOperator, TokenIdentifier}};
   
   pub fn tokenize(chars: Vec<char>) {
     let mut keyword_value: Vec<char> = Vec::new();
@@ -142,16 +143,17 @@ pub mod tokenizer {
         keyword_value.push(*char);
       } else if char.is_whitespace(){
         if keyword_value.is_empty(){
-          println!("found whitespace")
+          continue;
         } else {
           let string: String = keyword_value.drain(..).collect();
           let s = string.as_str();
-          match comp_key(s) {
-            Some(TokenKeyword::Function) => println!("Function found"),
-            Some(TokenKeyword::Enum) => println!("Enum found"),
-            Some(TokenKeyword::Struct) => println!("Struct found"),
-            None => println!("Unknown / Not done for, {}", s),
-          }
+          let keyword =match s{
+            "call" => LexerCartegories::Keyword(TokenKeyword::Function),
+            "enum" => LexerCartegories::Keyword(TokenKeyword::Enum),
+            "struct" => LexerCartegories::Keyword(TokenKeyword::Struct),
+            _ => LexerCartegories::Identifier(TokenIdentifier(s.to_string())),
+          };
+          tokens.push(keyword);
         }
       } else if is_token_sep(char){
         let sep = match char {
@@ -174,12 +176,23 @@ pub mod tokenizer {
           _ => unimplemented!(),
         };
         tokens.push(oper);
-        //println!("Found TokenOperator: {:?}", comp_operator(char));
+        /*println!("Found TokenOperator: {:?}", comp_operator(char));*/
       } else {
         println!("Found smth else: {:?}", char);
       }
     }
+    flush_keyword(&mut keyword_value, &mut tokens);
     println!("{:?}",tokens);
   }
-  /* fn match_stuff(token: LexerCartegories,type: ) {}*/
+  fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
+    if keyword.is_empty() {
+      return;
+    } 
+    let val = keyword.drain(..).collect::<String>();
+    let value = match comp_key(val.as_str()){
+      Some(keyword) => LexerCartegories::Keyword(keyword),
+      None => LexerCartegories::Identifier(TokenIdentifier(val.to_string())),
+    };
+    tokens.push(value);
+  }
 }
