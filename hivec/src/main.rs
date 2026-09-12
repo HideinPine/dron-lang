@@ -11,14 +11,14 @@ fn get_file() -> String {
       Some(file) => file.as_str(),
       None => {
         println!("No file path provided... \nRunning default..\n");
-        "../tests/main.lc"
+        "../tests/main.hv"
       }
     };
     //let file_path = &args[1];
     let file: Result<String, std::io::Error> = fs::read_to_string(path);
     match file {
       Ok(string) => string,
-      Err(..) => String::from("../tests/main.lc"),
+      Err(..) => String::from("../tests/main.hv"),
     }
     
 }
@@ -30,5 +30,5 @@ fn to_char(file: String) -> Vec<char> {
 fn main() {
     let file = get_file();
     let chars = to_char(file);
-    checker::check_values(chars);
+    tokenizer::tokenize(chars);
 }

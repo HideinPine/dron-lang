@@ -1,5 +1,6 @@
 #![allow(unused)]
 pub mod types{
+  #[derive(Debug)]
   pub enum LexerCartegories {
     Keyword(TokenKeyword), /* 3rd: PAUSE -- ALMOST DONE */
     Separator(TokenSeparator), /* 1st: PAUSE -- ALMOST DONE*/
@@ -22,6 +23,7 @@ pub mod types{
     LeftCurl,
     RightCurl,
   }
+  #[derive(Debug)]
   pub enum TokenLiteral {
     True,
     False,
@@ -34,6 +36,7 @@ pub mod types{
     Div,
     Equ,
   }
+  #[derive(Debug)]
   pub struct TokenIdentifier;
 }
 
@@ -87,7 +90,13 @@ pub mod checker {
   use crate::lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
     types::{TokenKeyword, LexerCartegories}};
-
+  fn check_eof(vector: Vec<char>) -> Option<Vec<char>> {
+    if vector.is_empty(){
+      None
+    } else {
+      Some(vector)
+    }
+  }
   pub fn check_values(chars: Vec<char>) {
     let mut value: Vec<char> = Vec::new();
     
@@ -116,18 +125,61 @@ pub mod checker {
       }
     }
   }
+  
 }
 
 pub mod tokenizer {
   use crate::lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
-    types::{TokenKeyword, LexerCartegories}};
+    types::{LexerCartegories, TokenSeparator, TokenKeyword, TokenOperator}};
   
   pub fn tokenize(chars: Vec<char>) {
-    let mut token_value: Vec<char> = Vec::new();
-
-    for char in chars{
-      
+    let mut keyword_value: Vec<char> = Vec::new();
+    let mut tokens: Vec<LexerCartegories> = Vec::new(); 
+    
+    for (i, char) in chars.iter().enumerate() {
+      if char.is_alphabetic() {
+        keyword_value.push(*char);
+      } else if char.is_whitespace(){
+        if keyword_value.is_empty(){
+          println!("found whitespace")
+        } else {
+          let string: String = keyword_value.drain(..).collect();
+          let s = string.as_str();
+          match comp_key(s) {
+            Some(TokenKeyword::Function) => println!("Function found"),
+            Some(TokenKeyword::Enum) => println!("Enum found"),
+            Some(TokenKeyword::Struct) => println!("Struct found"),
+            None => println!("Unknown / Not done for, {}", s),
+          }
+        }
+      } else if is_token_sep(char){
+        let sep = match char {
+          '(' => LexerCartegories::Separator(TokenSeparator::OpenParent),
+          ')' => LexerCartegories::Separator(TokenSeparator::CloseParent),
+          '{' => LexerCartegories::Separator(TokenSeparator::LeftCurl),
+          '}' => LexerCartegories::Separator(TokenSeparator::RightCurl),
+          ';' => LexerCartegories::Separator(TokenSeparator::SemiColon),
+          _ => unimplemented!(),
+        };
+        tokens.push(sep);
+        /* println!("Found TokenSeparator: {:?}",comp_pun(char));*/
+      } else if is_token_oper(char){
+        let oper = match char {
+          '+' => LexerCartegories::Operator(TokenOperator::Add),
+          '-' => LexerCartegories::Operator(TokenOperator::Sub),
+          '/' => LexerCartegories::Operator(TokenOperator::Div), 
+          '*' => LexerCartegories::Operator(TokenOperator::Mul),
+          '=' => LexerCartegories::Operator(TokenOperator::Equ),
+          _ => unimplemented!(),
+        };
+        tokens.push(oper);
+        //println!("Found TokenOperator: {:?}", comp_operator(char));
+      } else {
+        println!("Found smth else: {:?}", char);
+      }
     }
+    println!("{:?}",tokens);
   }
+  /* fn match_stuff(token: LexerCartegories,type: ) {}*/
 }
