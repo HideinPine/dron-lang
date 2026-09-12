@@ -29,7 +29,7 @@ fn to_char(file: String) -> Vec<char> {
 
 fn main() {
     let file = get_file();
-    println!("{}", file);
+    /* println!("{}", file); */
     let chars = to_char(file);
     tokenizer::tokenize(chars);
 }

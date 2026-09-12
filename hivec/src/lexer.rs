@@ -91,13 +91,6 @@ pub mod checker {
   use crate::lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
     types::{TokenKeyword, LexerCartegories}};
-  fn check_eof(vector: Vec<char>) -> Option<Vec<char>> {
-    if vector.is_empty(){
-      None
-    } else {
-      Some(vector)
-    }
-  }
   pub fn check_values(chars: Vec<char>) {
     let mut value: Vec<char> = Vec::new();
     
@@ -133,7 +126,7 @@ pub mod tokenizer {
   use crate::lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
     types::{LexerCartegories, TokenSeparator, TokenKeyword, TokenOperator, TokenIdentifier}};
-  
+  use owo_colors::OwoColorize;
   pub fn tokenize(chars: Vec<char>) {
     let mut keyword_value: Vec<char> = Vec::new();
     let mut tokens: Vec<LexerCartegories> = Vec::new(); 
@@ -141,21 +134,10 @@ pub mod tokenizer {
     for (i, char) in chars.iter().enumerate() {
       if char.is_alphabetic() {
         keyword_value.push(*char);
-      } else if char.is_whitespace(){
-        if keyword_value.is_empty(){
-          continue;
-        } else {
-          let string: String = keyword_value.drain(..).collect();
-          let s = string.as_str();
-          let keyword =match s{
-            "call" => LexerCartegories::Keyword(TokenKeyword::Function),
-            "enum" => LexerCartegories::Keyword(TokenKeyword::Enum),
-            "struct" => LexerCartegories::Keyword(TokenKeyword::Struct),
-            _ => LexerCartegories::Identifier(TokenIdentifier(s.to_string())),
-          };
-          tokens.push(keyword);
-        }
-      } else if is_token_sep(char){
+      } else if char.is_whitespace(){ 
+        flush_keyword(&mut keyword_value, &mut tokens);
+      } else if is_token_sep(char){ 
+        flush_keyword(&mut keyword_value, &mut tokens);
         let sep = match char {
           '(' => LexerCartegories::Separator(TokenSeparator::OpenParent),
           ')' => LexerCartegories::Separator(TokenSeparator::CloseParent),
@@ -165,8 +147,8 @@ pub mod tokenizer {
           _ => unimplemented!(),
         };
         tokens.push(sep);
-        /* println!("Found TokenSeparator: {:?}",comp_pun(char));*/
       } else if is_token_oper(char){
+        flush_keyword(&mut keyword_value, &mut tokens);
         let oper = match char {
           '+' => LexerCartegories::Operator(TokenOperator::Add),
           '-' => LexerCartegories::Operator(TokenOperator::Sub),
@@ -176,13 +158,12 @@ pub mod tokenizer {
           _ => unimplemented!(),
         };
         tokens.push(oper);
-        /*println!("Found TokenOperator: {:?}", comp_operator(char));*/
       } else {
         println!("Found smth else: {:?}", char);
       }
     }
     flush_keyword(&mut keyword_value, &mut tokens);
-    println!("{:?}",tokens);
+    println!("{:?}",tokens.blue().bold());
   }
   fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
     if keyword.is_empty() {
