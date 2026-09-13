@@ -7,7 +7,7 @@ pub mod types{
     Literal(TokenLiteral), /* LATER ON WHEN NEEDED */
     Operator(TokenOperator), /* 2nd: PAUSE -- ALMOST DONE */
     Identifier(TokenIdentifier),
-    EndOfFile(EOF),
+    EndOfFile,
   }
   
   #[derive(Debug)]
@@ -36,10 +36,7 @@ pub mod types{
     Sub,
     Mul,
     Div,
-    Equ,
-  }
-  #[derive(Debug)]
-  pub struct EOF;
+    Equ}
   /*#[derive(Debug)]
   pub enum TokenIdentifier {
     Identify(String)
@@ -70,7 +67,7 @@ pub mod eval {
       _ => None,
     }
   }
-  pub fn is_token_sep(pun: &char) -> bool {
+  pub fn is_token_sep(pun: &char ) -> bool{
     let value = comp_pun(pun);
     match value {
       None => false,
@@ -142,14 +139,14 @@ pub mod checker {
 pub mod tokenizer {
   use crate::{lexer::{
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
-    types::{LexerCartegories, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator, EOF}}};
+    types::{LexerCartegories::{self, EndOfFile}, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator}}};
   use owo_colors::OwoColorize;
   pub fn tokenize(chars: Vec<char>) {
     let mut keyword_value: Vec<char> = Vec::new();
     let mut tokens: Vec<LexerCartegories> = Vec::new(); 
     
     for (i, char) in chars.iter().enumerate() {
-      if char.is_alphabetic() {
+      if char.is_alphabetic() || !keyword_value.is_empty() && char.is_numeric(){
         keyword_value.push(*char);
       } else if char.is_whitespace(){ 
         flush_keyword(&mut keyword_value, &mut tokens);
@@ -181,7 +178,7 @@ pub mod tokenizer {
       }
     }
     flush_keyword(&mut keyword_value, &mut tokens);
-    tokens.push(LexerCartegories::EndOfFile(EOF));
+    tokens.push(EndOfFile);
     println!("\n{:?}",tokens.blue().bold());
   }
   fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
