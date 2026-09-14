@@ -7,5 +7,5 @@ read:
 	$name = Read-Host
 	$(C) $(name)
 	
-clean:
+rm:
 	$(C) clean

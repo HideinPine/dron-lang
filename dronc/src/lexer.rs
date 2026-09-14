@@ -1,6 +1,6 @@
 #![allow(unused)]
 pub mod types{
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub enum LexerCartegories {
     Keyword(TokenKeyword), /* 3rd: PAUSE -- ALMOST DONE */
     Separator(TokenSeparator), /* 1st: PAUSE -- ALMOST DONE*/
@@ -10,13 +10,13 @@ pub mod types{
     EndOfFile,
   }
   
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub enum TokenKeyword{
     Function,
     Enum,
     Struct,
   }
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub enum TokenSeparator {
     OpenParent,
     CloseParent,
@@ -25,12 +25,12 @@ pub mod types{
     RightCurl,
     Comma,
   }
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub enum TokenLiteral {
     True,
     False,
   }
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub enum TokenOperator {
     Add,
     Sub,
@@ -44,7 +44,7 @@ pub mod types{
   #[derive(Debug)]
   struct Identify(pub String);*/
   
-  #[derive(Debug)]
+  #[derive(Debug,PartialEq,Clone)]
   pub struct TokenIdentifier(String);
   impl TokenIdentifier {
     pub fn new(val: String) -> Self{
@@ -141,6 +141,7 @@ pub mod tokenizer {
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
     types::{LexerCartegories::{self, EndOfFile}, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator}}};
   use owo_colors::OwoColorize;
+  use crate::parser::match_access::keyword_type;
   pub fn tokenize(chars: Vec<char>) {
     let mut keyword_value: Vec<char> = Vec::new();
     let mut tokens: Vec<LexerCartegories> = Vec::new(); 
@@ -180,6 +181,7 @@ pub mod tokenizer {
     flush_keyword(&mut keyword_value, &mut tokens);
     tokens.push(EndOfFile);
     println!("\n{:?}",tokens.blue().bold());
+    keyword_type(TokenKeyword::Function,&tokens, 4);
   }
   fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
     if keyword.is_empty() {
