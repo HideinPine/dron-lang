@@ -141,7 +141,7 @@ pub mod tokenizer {
     eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep}, 
     types::{LexerCartegories::{self, EndOfFile}, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator}}};
   use owo_colors::OwoColorize;
-  use crate::parser::match_access::keyword_type;
+  use crate::parser::parser::try_val;
   pub fn tokenize(chars: Vec<char>) {
     let mut keyword_value: Vec<char> = Vec::new();
     let mut tokens: Vec<LexerCartegories> = Vec::new(); 
@@ -181,7 +181,9 @@ pub mod tokenizer {
     flush_keyword(&mut keyword_value, &mut tokens);
     tokens.push(EndOfFile);
     println!("\n{:?}",tokens.blue().bold());
-    keyword_type(TokenKeyword::Function,&tokens, 4);
+    //keyword_type(TokenKeyword::Function,&tokens, 0);
+    try_val(&tokens);
+    println!("\n{:?}",tokens.blue().bold());
   }
   fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
     if keyword.is_empty() {

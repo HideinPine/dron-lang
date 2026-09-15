@@ -2,6 +2,7 @@
 pub mod functione;
 pub mod parser{
   use crate::lexer::types::{LexerCartegories, TokenKeyword, TokenSeparator};
+  use crate::parser::match_access::function_values;
   pub enum Def {
     Func(FunDef),
   }
@@ -10,6 +11,30 @@ pub mod parser{
     fname: String,
     args: Option<Vec<LexerCartegories>>,
     body: Option<Vec<LexerCartegories>>,
+  }
+  impl FunDef{
+    fn new() -> Self {
+      FunDef {
+        keyword: TokenKeyword::Function,
+        fname: String::from("main"),
+        args: None,
+        body: None,
+      }
+    }
+  }
+  pub fn try_val(token_vec: &Vec<LexerCartegories>) {
+    for (i, token) in token_vec.iter().enumerate() {
+      let eof = LexerCartegories::EndOfFile;
+      if *token == eof {
+        /*token_vec.push(FunDef::new());*/
+        println!("EndOfFile reached");
+        break;
+      } else if *token == LexerCartegories::Keyword(TokenKeyword::Function){
+        function_values(&token_vec, i);
+      } else {
+        continue;
+      }
+    }
   }
 }
 
@@ -29,27 +54,31 @@ pub mod process{
 }
 pub mod match_access{
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
-    use crate::parser::process::peek;
+    use crate::parser::process::{consume, peek};
+    use crate::functione::name;
 
-  pub fn keyword_type(keyword: TokenKeyword, token_vec: &Vec<LexerCartegories>, position: usize) {
+  fn keyword_type(keyword: TokenKeyword, token_vec: &Vec<LexerCartegories>, position: usize) {
+    let pos = position + 1;
     match keyword {
-      TokenKeyword::Enum => unimplemented!(),
-      TokenKeyword::Function => get_values(token_vec, position),
-      TokenKeyword::Struct => unimplemented!(),
-    }
+      TokenKeyword::Enum => get_values(token_vec,pos),
+      TokenKeyword::Function => get_values(token_vec, pos),
+      TokenKeyword::Struct => get_values(token_vec, pos),
+    } 
   }
-  pub fn get_values(token_vec: &Vec<LexerCartegories>, position: usize){
+  pub fn function_values(token_vec: &Vec<LexerCartegories>, position: usize) {
+    keyword_type(TokenKeyword::Function, token_vec, position);
+  }
+  fn get_values(token_vec: &Vec<LexerCartegories>, position: usize){
     let pos = position;
     let name = peek(pos,&token_vec);
     match name {
       Some(LexerCartegories::Identifier(token_identifier)) => println!("Found: {:?}", token_identifier),
-      Some(LexerCartegories::Separator(_)) => println!("Found {:?}",name.unwrap()),
-      Some(LexerCartegories::Keyword(_)) => println!("Found {:?}",name.unwrap()),
-      Some(LexerCartegories::EndOfFile) => println!("Found {:?}",name.unwrap()),
-      Some(LexerCartegories::Literal(_)) => println!("Found {:?}",name.unwrap()),
-      Some(LexerCartegories::Operator(_)) => println!("Found {:?}",name.unwrap()),
-      None => println!("None found"), 
+      Some(LexerCartegories::Separator(_)) => name::function_name_error(name),
+      Some(LexerCartegories::Keyword(_)) => name::function_name_error(name),
+      Some(LexerCartegories::EndOfFile) => name::function_name_error(name),
+      Some(LexerCartegories::Literal(_)) => name::function_name_error(name),
+      Some(LexerCartegories::Operator(_)) => name::function_name_error(name),
+      None => todo!(), 
     }
   }
-  
 }
