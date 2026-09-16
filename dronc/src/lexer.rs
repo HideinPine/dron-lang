@@ -183,7 +183,7 @@ pub mod tokenizer {
     println!("\n{:?}",tokens.blue().bold());
     //keyword_type(TokenKeyword::Function,&tokens, 0);
     try_val(&tokens);
-    println!("\n{:?}",tokens.blue().bold());
+    /* println!("\n{:?}",tokens.blue().bold()); */
   }
   fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>){
     if keyword.is_empty() {

@@ -3,11 +3,11 @@ pub mod functione;
 pub mod parser{
   use crate::lexer::types::{LexerCartegories, TokenKeyword, TokenSeparator};
   use crate::parser::match_access::function_values;
+  use std::cell::RefCell;
   pub enum Def {
     Func(FunDef),
   }
   pub struct FunDef {
-    keyword: TokenKeyword,
     fname: String,
     args: Option<Vec<LexerCartegories>>,
     body: Option<Vec<LexerCartegories>>,
@@ -15,7 +15,6 @@ pub mod parser{
   impl FunDef{
     fn new() -> Self {
       FunDef {
-        keyword: TokenKeyword::Function,
         fname: String::from("main"),
         args: None,
         body: None,
@@ -27,7 +26,7 @@ pub mod parser{
       let eof = LexerCartegories::EndOfFile;
       if *token == eof {
         /*token_vec.push(FunDef::new());*/
-        println!("EndOfFile reached");
+        println!("EndOfFile reached\n");
         break;
       } else if *token == LexerCartegories::Keyword(TokenKeyword::Function){
         function_values(&token_vec, i);
@@ -48,8 +47,7 @@ pub mod process{
     token_vec.get(postion)
   }
   pub fn iseof(token_vec: &Vec<LexerCartegories>, position: usize) -> bool {
-    let eof: LexerCartegories = LexerCartegories::EndOfFile;
-    token_vec[position] == eof
+    token_vec[position] == LexerCartegories::EndOfFile
   }
 }
 pub mod match_access{
