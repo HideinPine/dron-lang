@@ -23,8 +23,7 @@ pub mod parser{
   }
   pub fn try_val(token_vec: &Vec<LexerCartegories>) {
     for (i, token) in token_vec.iter().enumerate() {
-      let eof = LexerCartegories::EndOfFile;
-      if *token == eof {
+      if *token == LexerCartegories::EndOfFile {
         /*token_vec.push(FunDef::new());*/
         println!("EndOfFile reached\n");
         break;
@@ -53,7 +52,7 @@ pub mod process{
 pub mod match_access{
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
     use crate::parser::process::{consume, peek};
-    use crate::functione::name;
+    use crate::functione::name_error;
 
   fn keyword_type(keyword: TokenKeyword, token_vec: &Vec<LexerCartegories>, position: usize) {
     let pos = position + 1;
@@ -71,11 +70,11 @@ pub mod match_access{
     let name = peek(pos,&token_vec);
     match name {
       Some(LexerCartegories::Identifier(token_identifier)) => println!("Found: {:?}", token_identifier),
-      Some(LexerCartegories::Separator(_)) => name::function_name_error(name),
-      Some(LexerCartegories::Keyword(_)) => name::function_name_error(name),
-      Some(LexerCartegories::EndOfFile) => name::function_name_error(name),
-      Some(LexerCartegories::Literal(_)) => name::function_name_error(name),
-      Some(LexerCartegories::Operator(_)) => name::function_name_error(name),
+      Some(LexerCartegories::Separator(_)) => name_error::function_name_error(name, pos),
+      Some(LexerCartegories::Keyword(_)) => name_error::function_name_error(name, pos),
+      Some(LexerCartegories::EndOfFile) => name_error::function_name_error(name, pos),
+      Some(LexerCartegories::Literal(_)) => name_error::function_name_error(name, pos),
+      Some(LexerCartegories::Operator(_)) => name_error::function_name_error(name, pos),
       None => todo!(), 
     }
   }
