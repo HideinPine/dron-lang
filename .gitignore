@@ -1,3 +1,4 @@
 target/
 *.jpg
 Makefile
+rejects/

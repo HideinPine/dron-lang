@@ -1,8 +1,9 @@
 #![allow(unused)]
-pub mod functione;
+pub mod errors;
+pub mod keyword;
 pub mod stmt {
-    use crate::lexer::types::{LexerCartegories, TokenKeyword, TokenIdentifier};
-    use crate::parser::match_access::function_values;
+    use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
+    use crate::parser::{keyword::func::FunDef, match_access::function_values};
 
     pub struct Parser {
         pub vector: Vec<LexerCartegories>,
@@ -22,27 +23,7 @@ pub mod stmt {
     pub enum Def {
         Func(FunDef),
     }
-    pub struct FunDef {
-        fname: String,
-        args: Option<Vec<TokenIdentifier>>,
-        body: Option<Vec<LexerCartegories>>,
-    }
-    impl FunDef {
-        fn new() -> Self {
-            FunDef {
-                fname: String::from("main"),
-                args: None,
-                body: None,
-            }
-        }
-        fn add_args(&mut self, args: TokenIdentifier, is_there: bool) {
-          if is_there == true { self.args.as_mut().unwrap().push(args) } else {return;}
-        }
-        fn add_body(&mut self, body: LexerCartegories, is_there: bool) {
-          if is_there == true { self.body.as_mut().unwrap().push(body) } else {return}
-        }
-        
-    }
+
     pub fn try_val(token_vec: &[LexerCartegories]) {
         for (i, token) in token_vec.iter().enumerate() {
             if *token == LexerCartegories::EndOfFile {
@@ -59,8 +40,8 @@ pub mod stmt {
 }
 
 pub mod match_access {
-    use crate::functione::name_error;
-    use crate::lexer::types::{LexerCartegories, TokenKeyword};
+    use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
+    use crate::parser::errors::name_error;
     use crate::parser::stmt::Parser;
 
     fn keyword_type(keyword: TokenKeyword, token_vec: Vec<LexerCartegories>, position: usize) {
@@ -72,6 +53,7 @@ pub mod match_access {
             TokenKeyword::Struct => get_values(token_vec, pos),
         }
     }
+    fn smth(token_vec: Vec<LexerCartegories>, position: usize, keyword: TokenKeyword) {}
     pub fn function_values(token_vec: &[LexerCartegories], position: usize) {
         keyword_type(TokenKeyword::Function, token_vec.to_vec(), position);
     }
@@ -82,12 +64,13 @@ pub mod match_access {
         };
         let name = parser.peek();
         let pos = parser.pos;
+        let identifier = TokenIdentifier("".to_string());
         //println!("pos {pos:?}");
         match name {
             Some(LexerCartegories::Identifier(token_identifier)) => {
                 println!("Found: {:?}", token_identifier);
             }
-            _ => name_error::function_name_error(name, pos),
+            _ => name_error::name_error(name, identifier, pos),
         }
     }
 }

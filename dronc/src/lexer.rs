@@ -46,7 +46,7 @@ pub mod types {
     struct Identify(pub String);*/
 
     #[derive(Debug, PartialEq, Clone)]
-    pub struct TokenIdentifier(String);
+    pub struct TokenIdentifier(pub String);
     impl TokenIdentifier {
         pub fn new(val: String) -> Self {
             TokenIdentifier(val)

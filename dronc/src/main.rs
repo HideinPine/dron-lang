@@ -1,6 +1,6 @@
 #![allow(unused)]
 use crate::lexer::{checker, tokenizer};
-use crate::parser::functione;
+use crate::parser::errors;
 use std::{env, fs};
 mod lexer;
 mod parser;
