@@ -2,3 +2,5 @@ target/
 *.jpg
 Makefile
 rejects/
+tests/sketch/
+
