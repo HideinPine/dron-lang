@@ -2,7 +2,8 @@
 pub mod types {
     #[derive(Debug, PartialEq, Clone)]
     pub enum LexerCartegories {
-        Keyword(TokenKeyword),     /* 3rd: PAUSE -- ALMOST DONE */
+        Keyword(TokenKeyword), /* 3rd: PAUSE -- ALMOST DONE */
+        Block(TokenBlock),
         Separator(TokenSeparator), /* 1st: PAUSE -- ALMOST DONE*/
         Literal(TokenLiteral),     /* LATER ON WHEN NEEDED */
         Operator(TokenOperator),   /* 2nd: PAUSE -- ALMOST DONE */
@@ -15,6 +16,10 @@ pub mod types {
         Function,
         Enum,
         Struct,
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    pub enum TokenBlock {
+        Ghost, //ghost block
     }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenSeparator {
@@ -55,7 +60,7 @@ pub mod types {
 }
 
 pub mod eval {
-    use crate::lexer::types::{TokenKeyword, TokenOperator, TokenSeparator};
+    use crate::lexer::types::{TokenBlock, TokenKeyword, TokenOperator, TokenSeparator};
     pub fn comp_pun(pun: &char) -> Option<TokenSeparator> {
         match pun {
             '(' => Some(TokenSeparator::OpenParent),
@@ -86,6 +91,15 @@ pub mod eval {
         let value = comp_operator(oper);
         value.is_some()
     }
+    pub fn comp_block(block: &str) -> Option<TokenBlock> {
+        match block {
+            "ghost" => Some(TokenBlock::Ghost),
+            _ => None,
+        }
+    }
+    pub fn is_block(block: &str) -> bool {
+        comp_block(block).is_some()
+    }
     pub fn comp_key(key: &str) -> Option<TokenKeyword> {
         match key {
             "fn" => Some(TokenKeyword::Function),
@@ -93,6 +107,9 @@ pub mod eval {
             "struct" => Some(TokenKeyword::Struct),
             _ => None,
         }
+    }
+    pub fn is_keyword(val: &str) -> bool {
+        comp_key(val).is_some()
     }
 }
 
@@ -133,10 +150,13 @@ pub mod checker {
 
 pub mod tokenizer {
     use crate::lexer::{
-        eval::{comp_key, comp_operator, comp_pun, is_token_oper, is_token_sep},
+        eval::{
+            comp_block, comp_key, comp_operator, comp_pun, is_block, is_keyword, is_token_oper,
+            is_token_sep,
+        },
         types::{
             LexerCartegories::{self, EndOfFile},
-            TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
+            TokenBlock, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
         },
     };
     use crate::parser::stmt::try_val;
@@ -193,11 +213,21 @@ pub mod tokenizer {
             return;
         }
         let val = keyword.drain(..).collect::<String>();
-        let value = match comp_key(val.as_str()) {
-            Some(keyword) => LexerCartegories::Keyword(keyword),
-            None => LexerCartegories::Identifier(TokenIdentifier::new(val)),
-            //None => LexerCartegories::Identifier(TokenIdentifier::Identify(val.to_string())),
-        };
-        tokens.push(value);
+        if is_block(val.as_str()) {
+            let value = match comp_block(val.as_str()) {
+                Some(block) => LexerCartegories::Block(block),
+                None => LexerCartegories::Identifier(TokenIdentifier::new(val)),
+            };
+            tokens.push(value);
+            return;
+        } else if is_keyword(val.as_str()) {
+            let value = match comp_key(val.as_str()) {
+                Some(keyword) => LexerCartegories::Keyword(keyword),
+                None => LexerCartegories::Identifier(TokenIdentifier::new(val)),
+            };
+            tokens.push(value);
+            return;
+        }
+        tokens.push(LexerCartegories::Identifier(TokenIdentifier::new(val)));
     }
 }
