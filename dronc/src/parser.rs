@@ -5,7 +5,7 @@ pub mod keyword;
 
 pub mod stmt {
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
-    use crate::parser::{keyword::func::FunDef, match_access::function_values};
+    use crate::parser::{keyword::definition::FunDef, match_access::function_values};
 
     pub struct Parser {
         pub vector: Vec<LexerCartegories>,
@@ -30,7 +30,7 @@ pub mod stmt {
         for (i, token) in token_vec.iter().enumerate() {
             if *token == LexerCartegories::EndOfFile {
                 /*token_vec.push(FunDef::new());*/
-                println!("EndOfFile reached\n");
+                //println!("EndOfFile reached\n");
                 break;
             } else if *token == LexerCartegories::Keyword(TokenKeyword::Function) {
                 function_values(token_vec, i);
@@ -70,7 +70,7 @@ pub mod match_access {
         //println!("pos {pos:?}");
         match name {
             Some(LexerCartegories::Identifier(token_identifier)) => {
-                println!("Found: {:?}", token_identifier);
+                //println!("Found: {:?}", token_identifier);
             }
             _ => name_error::name_error(name, identifier, pos),
         }

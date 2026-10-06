@@ -12,8 +12,8 @@ fn get_file() -> String {
     let path: &str = match file_path {
         Some(file) => file.as_str(),
         None => {
-            println!("\nNo file path provided... \nRunning default..\n");
-            "../tests/main.rv"
+            //println!("\nNo file path provided... \nRunning default..\n");
+            "../tests/operators.rn"
         }
     };
     //let file_path = &args[1];
@@ -30,7 +30,7 @@ fn to_char(file: String) -> Vec<char> {
 
 fn main() {
     let file = get_file();
-    /* println!("{}", file); */
+    println!("{}", file);
     let chars = to_char(file);
     tokenizer::tokenize(chars);
 }
