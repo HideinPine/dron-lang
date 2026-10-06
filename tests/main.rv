@@ -1,5 +1,4 @@
-() /// 
-call 
-enum fn 
-struct -call-
-,struct mee
+fn main(){}
+struct smth {}
+enum smth {}
+ghost

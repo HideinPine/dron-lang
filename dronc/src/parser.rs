@@ -1,6 +1,8 @@
 #![allow(unused)]
+pub mod block;
 pub mod errors;
 pub mod keyword;
+
 pub mod stmt {
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
     use crate::parser::{keyword::func::FunDef, match_access::function_values};

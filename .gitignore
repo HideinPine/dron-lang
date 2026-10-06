@@ -3,4 +3,4 @@ target/
 Makefile
 rejects/
 tests/sketch/
-
+*.zed
