@@ -198,7 +198,7 @@ pub mod tokenizer {
             TokenAssign, TokenBlock, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
         },
     };
-    use crate::parser::stmt::try_val;
+    use crate::parser::{match_access::function_values, stmt::try_val};
     use owo_colors::OwoColorize;
     pub fn tokenize(chars: Vec<char>) {
         let mut keyword_value: Vec<char> = Vec::new();
@@ -255,9 +255,10 @@ pub mod tokenizer {
         tokens.push(EndOfFile);
         println!("\n{:?}", tokens.blue().bold());
         println!("Total lines are: {newline_counter}\n");
-        //keyword_type(TokenKeyword::Function,&tokens, 0);
+        //keyword_type(TokenKeyword::Function, &tokens, 0);
+        //println!("Function values: {:?}", function_values(&tokens, 8));
         try_val(&tokens);
-        println!("Operator value..: {:?} Should be empty", oper_val);
+        //println!("Operator value..: {:?} Should be empty", oper_val);
         /* println!("\n{:?}",tokens.blue().bold()); */
     }
     fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {

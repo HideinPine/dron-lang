@@ -5,21 +5,38 @@ pub mod keyword;
 
 pub mod stmt {
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
-    use crate::parser::{keyword::definition::FunDef, match_access::function_values};
+    use crate::parser::{
+        errors::parser_error::{InvalidTokenError, ParserError},
+        keyword::definition::FunDef,
+        match_access::function_values,
+    };
 
-    pub struct Parser {
-        pub vector: Vec<LexerCartegories>,
+    pub struct Parser<'a> {
+        pub tokens: &'a [LexerCartegories],
         pub pos: usize,
     }
-    impl Parser {
-        pub fn consume(&self) -> LexerCartegories {
-            <LexerCartegories as Clone>::clone(&self.vector[self.pos])
+    impl<'a> Parser<'a> {
+        pub fn next(&mut self) -> Option<&LexerCartegories> {
+            //todo!()
+            let t = self.tokens.get(self.pos);
+            self.pos += 1;
+            t
         }
         pub fn peek(&self) -> Option<&LexerCartegories> {
-            self.vector.get(self.pos)
+            self.tokens.get(self.pos)
         }
-        pub fn iseof(&self) -> bool {
-            self.vector[self.pos] == LexerCartegories::EndOfFile
+        pub fn expect(&mut self, expected: LexerCartegories) -> Result<(), ParserError> {
+            match self.peek() {
+                Some(val) if *val == expected => {
+                    self.pos += 1;
+                    Ok(())
+                }
+                Some(found) => Err(ParserError::InvalidToken(InvalidTokenError {
+                    expected,
+                    found: found.clone(),
+                })),
+                None => Err(ParserError::UnexpectedEOF),
+            }
         }
     }
     pub enum Def {
@@ -33,7 +50,10 @@ pub mod stmt {
                 //println!("EndOfFile reached\n");
                 break;
             } else if *token == LexerCartegories::Keyword(TokenKeyword::Function) {
-                function_values(token_vec, i);
+                match function_values(token_vec, i) {
+                    Ok(_) => {}
+                    Err(e) => println!("Error: {e}"),
+                }
             } else {
                 continue;
             }
@@ -43,25 +63,35 @@ pub mod stmt {
 
 pub mod match_access {
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword};
-    use crate::parser::errors::name_error;
+    use crate::parser::errors::{keyword_error, name_error};
     use crate::parser::stmt::Parser;
 
-    fn keyword_type(keyword: TokenKeyword, token_vec: Vec<LexerCartegories>, position: usize) {
+    fn keyword_type(
+        keyword: TokenKeyword,
+        token_vec: Vec<LexerCartegories>,
+        position: usize,
+    ) -> Result<TokenIdentifier, keyword_error::KeywordError> {
         let pos = position + 1;
         //println!("postion: {position} found: {keyword:?}");
         match keyword {
-            TokenKeyword::Enum => get_values(token_vec, pos),
-            TokenKeyword::Function => get_values(token_vec, pos),
-            TokenKeyword::Struct => get_values(token_vec, pos),
+            TokenKeyword::Enum => get_values(&token_vec, pos),
+            TokenKeyword::Function => get_values(&token_vec, pos),
+            TokenKeyword::Struct => get_values(&token_vec, pos),
         }
     }
-    fn smth(token_vec: Vec<LexerCartegories>, position: usize, keyword: TokenKeyword) {}
-    pub fn function_values(token_vec: &[LexerCartegories], position: usize) {
-        keyword_type(TokenKeyword::Function, token_vec.to_vec(), position);
+    //fn smth(token_vec: Vec<LexerCartegories>, position: usize, keyword: TokenKeyword) {}
+    pub fn function_values(
+        token_vec: &[LexerCartegories],
+        position: usize,
+    ) -> Result<TokenIdentifier, keyword_error::KeywordError> {
+        keyword_type(TokenKeyword::Function, token_vec.to_vec(), position)
     }
-    fn get_values(token_vec: Vec<LexerCartegories>, position: usize) {
+    fn get_values(
+        token_vec: &[LexerCartegories],
+        position: usize,
+    ) -> Result<TokenIdentifier, keyword_error::KeywordError> {
         let parser = Parser {
-            vector: token_vec,
+            tokens: token_vec,
             pos: position,
         };
         let name = parser.peek();
@@ -69,10 +99,9 @@ pub mod match_access {
         let identifier = TokenIdentifier("".to_string());
         //println!("pos {pos:?}");
         match name {
-            Some(LexerCartegories::Identifier(token_identifier)) => {
-                //println!("Found: {:?}", token_identifier);
-            }
-            _ => name_error::name_error(name, identifier, pos),
+            Some(LexerCartegories::Identifier(token_identifier)) => Ok(token_identifier.clone()),
+            _ => Err(keyword_error::KeywordError::LackIdentifier),
+            //_ => name_error::name_error(name, identifier, pos),
         }
     }
 }

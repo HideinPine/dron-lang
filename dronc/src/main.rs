@@ -13,7 +13,7 @@ fn get_file() -> String {
         Some(file) => file.as_str(),
         None => {
             //println!("\nNo file path provided... \nRunning default..\n");
-            "../tests/operators.rn"
+            "../tests/keywords.rn"
         }
     };
     //let file_path = &args[1];
@@ -30,7 +30,7 @@ fn to_char(file: String) -> Vec<char> {
 
 fn main() {
     let file = get_file();
-    println!("{}", file);
+    //println!("{}", file);
     let chars = to_char(file);
     tokenizer::tokenize(chars);
 }
