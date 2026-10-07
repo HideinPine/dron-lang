@@ -45,6 +45,7 @@ pub mod types {
         Integer,
         Float,
         String,
+        Char,
     }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenOperator {
@@ -194,7 +195,7 @@ pub mod tokenizer {
         },
         types::{
             LexerCartegories::{self, EndOfFile},
-            TokenBlock, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
+            TokenAssign, TokenBlock, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
         },
     };
     use crate::parser::stmt::try_val;
@@ -224,8 +225,16 @@ pub mod tokenizer {
                 tokens.push(sep);
             } else if is_token_oper(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
-
-                match comp_operator(char) {
+                let sub = char.clone();
+                if *char == '-' && chars.get(i + 1).is_some_and(|c| *c == '>') {
+                    oper_val.push(*char);
+                    //oper_val.push(*chars.get(i + 1).unwrap());
+                    //i += 1;
+                    continue;
+                } else if !oper_val.is_empty() {
+                    flush_oper(&mut oper_val, &mut tokens);
+                }
+                match comp_operator(&sub) {
                     Some(operator) => {
                         let oper = LexerCartegories::Operator(operator);
                         tokens.push(oper)
@@ -235,7 +244,9 @@ pub mod tokenizer {
             } else if is_token_comp(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
                 oper_val.push(*char);
-                //flush_oper(&mut oper_val, &mut tokens);
+                if oper_val.len() == 2 {
+                    flush_oper(&mut oper_val, &mut tokens);
+                }
             } else {
                 println!("Found smth else: {:?} on line {newline_counter}", char);
             }
@@ -274,10 +285,15 @@ pub mod tokenizer {
     fn flush_oper(oper: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if oper.is_empty() {
             return;
+        } else if !oper.is_empty() && oper.len() <= 2 {
+            let (c, next) = (oper[0], oper.get(1));
+            match lex_assign_compare(c, next) {
+                Some(value) => tokens.push(value),
+                None => println!("Unexpected symbol: {}", c),
+            }
+        } else {
+            println!("Added char:{:?}", oper);
         }
-        let (c, next) = (oper[0], oper.get(1));
-        let value = lex_assign_compare(c, next);
-        tokens.push(value.unwrap()); //Todo later solve for unwrap if the value is none.
-        oper.clear();
+        oper.clear()
     }
 }
