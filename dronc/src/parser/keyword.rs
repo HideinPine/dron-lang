@@ -1,45 +1,37 @@
 pub mod definition {
     use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator};
+    use crate::parser::errors::parser_error::ParserError;
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
-    pub struct Keyword {
-        keyword: TokenKeyword,
-        name: TokenIdentifier,
-        fields: Option<Vec<TokenIdentifier>>,
+    #[derive(Debug)]
+    pub enum KeywordStuff {
+        Struct(StructDef),
+        Func(FunDef),
+        Enum(EnumDef),
     }
-    impl Keyword {
-        pub fn template(keyword: TokenKeyword, name: TokenIdentifier) -> Self {
-            Self {
-                keyword,
-                name,
-                fields: None,
-            }
-        }
+    #[derive(Debug)]
+    pub struct StructDef {
+        pub name: TokenIdentifier,
+        pub fields: Option<Vec<TokenIdentifier>>,
+    }
+    #[derive(Debug)]
+    pub struct EnumDef {
+        pub name: TokenIdentifier,
+        pub fields: Option<Vec<TokenIdentifier>>,
     }
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftBrace + ... + TokenSeparator::RightBrace + TokenSeparator::LeftCurl + ... + TokenSeparator::RightCurl
+    #[derive(Debug)]
     pub struct FunDef {
-        keyword: TokenKeyword,
-        fname: String,
-        args: Option<Vec<TokenIdentifier>>,
+        pub fname: String,
+        pub args: Option<Vec<TokenIdentifier>>,
         // Add return logic here for named return.. none named return etc.
-        body: Option<Vec<LexerCartegories>>,
+        pub body: Option<Vec<LexerCartegories>>,
     }
     impl FunDef {
         pub fn new() -> Self {
             FunDef {
-                keyword: TokenKeyword::Function,
                 fname: String::from("main"),
                 args: None, //the arguments of the function
                 body: None, //the body of the function
-            }
-        }
-        fn add_args(&mut self, arguments: TokenIdentifier) {
-            if let Some(args) = &mut self.args {
-                args.push(arguments)
-            }
-        }
-        fn add_body(&mut self, values: LexerCartegories) {
-            if let Some(body) = &mut self.body {
-                body.push(values)
             }
         }
     }

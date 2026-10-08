@@ -4,3 +4,4 @@ Makefile
 rejects/
 tests/sketch/
 *.zed
+*.exe

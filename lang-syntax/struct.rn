@@ -1,0 +1,4 @@
+struct name{x, y}
+struct {}
+fn main() {}
+enum name{x, y}

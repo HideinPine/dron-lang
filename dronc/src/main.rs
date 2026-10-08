@@ -13,7 +13,7 @@ fn get_file() -> String {
         Some(file) => file.as_str(),
         None => {
             //println!("\nNo file path provided... \nRunning default..\n");
-            "../tests/keywords.rn"
+            "../lang-syntax/struct.rn"
         }
     };
     //let file_path = &args[1];
