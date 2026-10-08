@@ -1,49 +1,52 @@
 pub mod definition {
-    use crate::lexer::types::{LexerCartegories, TokenBlock, TokenSeparator};
+    use crate::lexer::types::LexerCartegories;
     // TokenBlock + TokenSeparator(OpenCurl) + ... + TokenSeparator(CloseCurl)
     #[derive(Debug)]
     pub struct GhostDef {
         pub content: Option<Vec<LexerCartegories>>,
     }
+    #[derive(Debug)]
+    pub struct UnsafeDef {
+        pub content: Option<Vec<LexerCartegories>>,
+    }
+    #[derive(Debug)]
     pub enum BlockStuff {
         Ghost(GhostDef),
+        Unsafe(UnsafeDef),
     }
 }
 
 pub mod parse_blocks {
-    use crate::lexer::types::{LexerCartegories, TokenBlock, TokenIdentifier, TokenSeparator};
+    use crate::lexer::types::{LexerCartegories, TokenBlock, TokenSeparator};
     use crate::parser::{
-        block::definition::{BlockStuff, GhostDef},
+        block::definition::{BlockStuff, GhostDef, UnsafeDef},
         errors::parser_error::ParserError,
         stmt::Parser,
     };
     impl<'a> Parser<'a> {
-        pub fn blocks_parse(&mut self) -> Result<Vec<BlockStuff>, ParserError> {
+        pub fn block_parse(&mut self, block: &TokenBlock) -> Result<Vec<BlockStuff>, ParserError> {
             //let mut funcvec: Vec<FunDef> = Vec::new();
             let mut blockstuffvec: Vec<BlockStuff> = Vec::new();
             // if let Some(LexerCartegories::Block(TokenBlock::Ghost)) = self.peek() {
             //     //TODO: Solve for repetitive code here later
-            while let Some(tok) = self.peek() {
-                match tok {
-                    LexerCartegories::EndOfFile => break,
-                    LexerCartegories::Block(TokenBlock::Ghost) => {
-                        blockstuffvec.push(BlockStuff::Ghost(self.parse_ghost()?));
-                    }
-                    other => return Err(ParserError::UnexpectedToken(other.clone())),
+            match block {
+                TokenBlock::Ghost => {
+                    blockstuffvec.push(BlockStuff::Ghost(self.parse_ghost()?));
+                }
+                TokenBlock::Unsafe => {
+                    blockstuffvec.push(BlockStuff::Unsafe(self.parse_unsafe()?));
                 }
             }
             Ok(blockstuffvec)
         }
         fn parse_ghost(&mut self) -> Result<GhostDef, ParserError> {
             self.expect(LexerCartegories::Block(TokenBlock::Ghost))?;
-            let name = match self.temporal() {
-                Some(LexerCartegories::Identifier(name)) => name.clone(),
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
-            };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut body: Vec<LexerCartegories> = Vec::new();
             while let Some(field) = self.peek() {
+                if let LexerCartegories::Separator(TokenSeparator::RightCurl) = field {
+                    break;
+                }
                 body.push(field.clone());
                 self.pos += 1;
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
@@ -52,6 +55,25 @@ pub mod parse_blocks {
             }
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(GhostDef {
+                content: Some(body),
+            })
+        }
+        fn parse_unsafe(&mut self) -> Result<UnsafeDef, ParserError> {
+            self.expect(LexerCartegories::Block(TokenBlock::Unsafe))?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
+            let mut body: Vec<LexerCartegories> = Vec::new();
+            while let Some(field) = self.peek() {
+                if let LexerCartegories::Separator(TokenSeparator::RightCurl) = field {
+                    break;
+                }
+                body.push(field.clone());
+                self.pos += 1;
+                if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
+                    self.pos += 1;
+                }
+            }
+            self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
+            Ok(UnsafeDef {
                 content: Some(body),
             })
         }

@@ -2,3 +2,4 @@ struct name{x, y}
 struct val{}
 fn main() {}
 enum name{x, y}
+ghost {x, t fa}

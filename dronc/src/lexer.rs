@@ -1,4 +1,4 @@
-#![allow(unused)]
+//#![allow(unused)]
 pub mod types {
     #[derive(Debug, PartialEq, Clone)]
     pub enum LexerCartegories {
@@ -22,6 +22,7 @@ pub mod types {
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenBlock {
         Ghost, //ghost block
+        Unsafe,
     }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenSeparator {
@@ -133,6 +134,7 @@ pub mod eval {
     pub fn comp_block(block: &str) -> Option<TokenBlock> {
         match block {
             "ghost" => Some(TokenBlock::Ghost),
+            "unsafe" => Some(TokenBlock::Unsafe),
             _ => None,
         }
     }
@@ -152,41 +154,6 @@ pub mod eval {
     }
 }
 
-pub mod checker {
-    use crate::lexer::{
-        eval::{comp_key, comp_operator, comp_sep, is_token_oper, is_token_sep},
-        types::{LexerCartegories, TokenKeyword},
-    };
-    pub fn check_values(chars: Vec<char>) {
-        let mut value: Vec<char> = Vec::new();
-
-        for (i, char) in chars.iter().enumerate() {
-            if char.is_alphabetic() {
-                value.push(*char);
-            } else if char.is_whitespace() {
-                if value.is_empty() {
-                    println!("found whitespace")
-                } else {
-                    let string: String = value.drain(..).collect();
-                    let s = string.as_str();
-                    match comp_key(s) {
-                        Some(TokenKeyword::Function) => println!("Function found"),
-                        Some(TokenKeyword::Enum) => println!("Enum found"),
-                        Some(TokenKeyword::Struct) => println!("Struct found"),
-                        None => println!("Unknown / Not done for, {}", s),
-                    }
-                }
-            } else if is_token_sep(char) {
-                println!("Found TokenSeparator: {:?}", comp_sep(char));
-            } else if is_token_oper(char) {
-                println!("Found TokenOperator: {:?}", comp_operator(char));
-            } else {
-                println!("Found smth else: {:?}", char);
-            }
-        }
-    }
-}
-
 pub mod tokenizer {
     use crate::lexer::{
         eval::{
@@ -195,13 +162,10 @@ pub mod tokenizer {
         },
         types::{
             LexerCartegories::{self, EndOfFile},
-            TokenAssign, TokenBlock, TokenIdentifier, TokenKeyword, TokenOperator, TokenSeparator,
+            TokenIdentifier,
         },
     };
-    use crate::parser::{
-        match_access::function_values,
-        stmt::{Parser, try_val},
-    };
+    use crate::parser::stmt::{Parser, try_val};
     use owo_colors::OwoColorize;
     pub fn tokenize(chars: Vec<char>) {
         let mut keyword_value: Vec<char> = Vec::new();
