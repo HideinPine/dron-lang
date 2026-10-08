@@ -228,7 +228,7 @@ pub mod tokenizer {
                 tokens.push(sep);
             } else if is_token_oper(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
-                let sub = char.clone();
+                let sub = *char;
                 if *char == '-' && chars.get(i + 1).is_some_and(|c| *c == '>') {
                     oper_val.push(*char);
                     //oper_val.push(*chars.get(i + 1).unwrap());
@@ -261,7 +261,7 @@ pub mod tokenizer {
             pos: 0,
         };
         match parser.parse_program() {
-            Ok(smth) => println!("{:?}", smth),
+            Ok(smth) => println!("\n{:?}", smth.green().bold()),
             Err(er) => println!("{:?}", er),
         }
         println!("\n{:?}", tokens.blue().bold());
