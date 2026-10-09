@@ -42,9 +42,9 @@ pub mod types {
     }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenLiteral {
-        Boolean,
-        Integer,
-        Float,
+        Boolean(bool),
+        Integer(i64),
+        Float(f64),
         String,
         Char,
     }
@@ -88,8 +88,8 @@ pub mod eval {
         let check = comp_assign(value);
         check.is_some()
     }
-    pub fn lex_assign_compare(c: char, next: Option<&char>) -> Option<LexerCartegories> {
-        match (c, next) {
+    pub fn lex_assign_compare(char: char, next: Option<&char>) -> Option<LexerCartegories> {
+        match (char, next) {
             ('=', Some('=')) => Some(Compare(TokenCompare::DoubleEqual)),
             ('=', Some('>')) => Some(Assign(TokenAssign::DoubleArrow)),
             ('-', Some('>')) => Some(Assign(TokenAssign::SingleArrow)),
@@ -133,8 +133,8 @@ pub mod eval {
     }
     pub fn comp_block(block: &str) -> Option<TokenBlock> {
         match block {
-            "ghost" => Some(TokenBlock::Ghost),
-            "unsafe" => Some(TokenBlock::Unsafe),
+            "ghost_block" => Some(TokenBlock::Ghost),
+            "unsafe_block" => Some(TokenBlock::Unsafe),
             _ => None,
         }
     }
@@ -162,22 +162,30 @@ pub mod tokenizer {
         },
         types::{
             LexerCartegories::{self, EndOfFile},
-            TokenIdentifier,
+            TokenIdentifier, TokenLiteral,
         },
     };
-    use crate::parser::stmt::{Parser, try_val};
-    use owo_colors::OwoColorize;
-    pub fn tokenize(chars: Vec<char>) {
+    pub fn tokenize(chars: Vec<char>) -> Vec<LexerCartegories> {
         let mut keyword_value: Vec<char> = Vec::new();
         let mut oper_val: Vec<char> = Vec::new();
         let mut tokens: Vec<LexerCartegories> = Vec::new();
         let mut newline_counter = 1;
+        let mut integer: Vec<char> = Vec::new();
 
         for (i, char) in chars.iter().enumerate() {
-            if char.is_alphabetic() || !keyword_value.is_empty() && char.is_numeric() {
+            if char.is_ascii_digit() {
+                if !keyword_value.is_empty() {
+                    keyword_value.push(*char);
+                } else {
+                    integer.push(*char);
+                }
+            } else if char.is_alphabetic() || !keyword_value.is_empty() && *char == '_' {
                 keyword_value.push(*char);
                 flush_oper(&mut oper_val, &mut tokens);
+            } else if !integer.is_empty() && *char == '.' {
+                integer.push(*char);
             } else if char.is_whitespace() {
+                flush_int(&mut integer, &mut tokens);
                 flush_keyword(&mut keyword_value, &mut tokens);
                 flush_oper(&mut oper_val, &mut tokens);
                 if *char == '\n' {
@@ -185,15 +193,17 @@ pub mod tokenizer {
                 }
             } else if is_token_sep(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
+                flush_int(&mut integer, &mut tokens);
                 let sep = match comp_sep(char) {
                     Some(separator) => LexerCartegories::Separator(separator),
                     None => todo!(),
                 };
                 tokens.push(sep);
             } else if is_token_oper(char) {
+                flush_int(&mut integer, &mut tokens);
                 flush_keyword(&mut keyword_value, &mut tokens);
                 let sub = *char;
-                if *char == '-' && chars.get(i + 1).is_some_and(|c| *c == '>') {
+                if *char == '-' && chars.get(i + 1).is_some_and(|char| *char == '>') {
                     oper_val.push(*char);
                     //oper_val.push(*chars.get(i + 1).unwrap());
                     //i += 1;
@@ -210,6 +220,7 @@ pub mod tokenizer {
                 };
             } else if is_token_comp(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
+                flush_int(&mut integer, &mut tokens);
                 oper_val.push(*char);
                 if oper_val.len() == 2 {
                     flush_oper(&mut oper_val, &mut tokens);
@@ -218,23 +229,10 @@ pub mod tokenizer {
                 println!("Found smth else: {:?} on line {newline_counter}", char);
             }
         }
+        flush_int(&mut integer, &mut tokens);
         flush_keyword(&mut keyword_value, &mut tokens);
         tokens.push(EndOfFile);
-        let mut parser = Parser {
-            tokens: &tokens,
-            pos: 0,
-        };
-        match parser.parse_program() {
-            Ok(smth) => println!("\n{:?}", smth.green().bold()),
-            Err(er) => println!("{:?}", er),
-        }
-        println!("\n{:?}", tokens.blue().bold());
-        println!("Total lines are: {newline_counter}\n");
-        //keyword_type(TokenKeyword::Function, &tokens, 0);
-        //println!("Function values: {:?}", function_values(&tokens, 8));
-        try_val(&tokens);
-        //println!("Operator value..: {:?} Should be empty", oper_val);
-        /* println!("\n{:?}",tokens.blue().bold()); */
+        return tokens;
     }
     fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if keyword.is_empty() {
@@ -258,14 +256,31 @@ pub mod tokenizer {
         }
         tokens.push(LexerCartegories::Identifier(TokenIdentifier::new(val)));
     }
+    fn flush_int(int: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
+        if int.is_empty() {
+            return;
+        }
+        let value: String = int.drain(..).collect();
+        if value.matches('.').count() == 1 {
+            match value.parse::<f64>() {
+                Ok(f) => tokens.push(LexerCartegories::Literal(TokenLiteral::Float(f))),
+                Err(e) => println!("Error{:?}", e),
+            }
+        } else {
+            match value.parse::<i64>() {
+                Ok(i) => tokens.push(LexerCartegories::Literal(TokenLiteral::Integer(i))),
+                Err(e) => println!("Error{:?}", e),
+            }
+        };
+    }
     fn flush_oper(oper: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if oper.is_empty() {
             return;
         } else if !oper.is_empty() && oper.len() <= 2 {
-            let (c, next) = (oper[0], oper.get(1));
-            match lex_assign_compare(c, next) {
+            let (char, next) = (oper[0], oper.get(1));
+            match lex_assign_compare(char, next) {
                 Some(value) => tokens.push(value),
-                None => println!("Unexpected symbol: {}", c),
+                None => println!("Unexpected symbol: {}", char),
             }
         } else {
             println!("Added char:{:?}", oper);

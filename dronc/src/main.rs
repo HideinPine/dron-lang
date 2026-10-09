@@ -1,6 +1,6 @@
 #![allow(unused)]
 use crate::lexer::tokenizer;
-use crate::parser::errors;
+use crate::parser::{errors, stmt::get_tokens};
 use std::{env, fs};
 mod lexer;
 mod parser;
@@ -32,5 +32,6 @@ fn main() {
     let file = get_file();
     //println!("{}", file);
     let chars = to_char(file);
-    tokenizer::tokenize(chars);
+    let tokenized = tokenizer::tokenize(chars);
+    get_tokens(tokenized);
 }
