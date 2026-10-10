@@ -1,5 +1,5 @@
 struct name{x, y}
-struct val{}
+struct val{1.2.3}
 fn main() {}
 enum name{x, y}
-ghost {x, t fa}
+ghost_block{x, t fa}

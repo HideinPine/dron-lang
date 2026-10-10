@@ -1,80 +1,7 @@
-//#![allow(unused)]
-pub mod types {
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum LexerCartegories {
-        Keyword(TokenKeyword), /* 3rd: PAUSE -- ALMOST DONE */
-        Block(TokenBlock),
-        Separator(TokenSeparator), /* 1st: PAUSE -- ALMOST DONE*/
-        Literal(TokenLiteral),     /* LATER ON WHEN NEEDED */
-        Operator(TokenOperator),   /* 2nd: PAUSE -- ALMOST DONE */
-        Identifier(TokenIdentifier),
-        Compare(TokenCompare),
-        Assign(TokenAssign),
-        EndOfFile,
-    }
-
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenKeyword {
-        Function,
-        Enum,
-        Struct,
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenBlock {
-        Ghost, //ghost block
-        Unsafe,
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenSeparator {
-        LeftBrace,
-        RightBrace,
-        SemiColon,
-        LeftCurl,
-        RightCurl,
-        Comma,
-        /* TODO: Dot, Colon, */
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenAssign {
-        Equal,
-        SingleArrow, // -> i.e return operator.
-        DoubleArrow, // =>
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenLiteral {
-        Boolean(bool),
-        Integer(i64),
-        Float(f64),
-        String,
-        Char,
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenOperator {
-        Add,
-        Sub,
-        Mul,
-        Div,
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub enum TokenCompare {
-        DoubleEqual,
-        Greater,
-        Less,
-        NotEqual,
-        GreaterEqual,
-        LessEqual,
-    }
-    #[derive(Debug, PartialEq, Clone)]
-    pub struct TokenIdentifier(pub String);
-    impl TokenIdentifier {
-        pub fn new(val: String) -> Self {
-            TokenIdentifier(val)
-        }
-    }
-}
+pub mod tokens;
 
 pub mod eval {
-    use crate::lexer::types::{
+    use crate::lexer::tokens::types::{
         LexerCartegories::{self, Assign, Compare},
         TokenAssign, TokenBlock, TokenCompare, TokenKeyword, TokenOperator, TokenSeparator,
     };
@@ -135,6 +62,7 @@ pub mod eval {
         match block {
             "ghost_block" => Some(TokenBlock::Ghost),
             "unsafe_block" => Some(TokenBlock::Unsafe),
+            "eph_region" => Some(TokenBlock::EphemeralRegion),
             _ => None,
         }
     }
@@ -156,20 +84,15 @@ pub mod eval {
 
 pub mod tokenizer {
     use crate::lexer::{
-        eval::{
-            comp_block, comp_key, comp_operator, comp_sep, is_block, is_keyword, is_token_comp,
-            is_token_oper, is_token_sep, lex_assign_compare,
-        },
-        types::{
-            LexerCartegories::{self, EndOfFile},
-            TokenIdentifier, TokenLiteral,
-        },
+        eval::{comp_operator, comp_sep, is_token_comp, is_token_oper, is_token_sep},
+        flush::{flush_int, flush_keyword, flush_oper},
+        tokens::types::LexerCartegories::{self, EndOfFile},
     };
-    pub fn tokenize(chars: Vec<char>) -> Vec<LexerCartegories> {
+    use crate::parser::errors::lexer_error::LexerError;
+    pub fn tokenize(chars: Vec<char>) -> Result<Vec<LexerCartegories>, LexerError> {
         let mut keyword_value: Vec<char> = Vec::new();
         let mut oper_val: Vec<char> = Vec::new();
         let mut tokens: Vec<LexerCartegories> = Vec::new();
-        let mut newline_counter = 1;
         let mut integer: Vec<char> = Vec::new();
 
         for (i, char) in chars.iter().enumerate() {
@@ -185,22 +108,19 @@ pub mod tokenizer {
             } else if !integer.is_empty() && *char == '.' {
                 integer.push(*char);
             } else if char.is_whitespace() {
-                flush_int(&mut integer, &mut tokens);
+                flush_int(&mut integer, &mut tokens)?;
                 flush_keyword(&mut keyword_value, &mut tokens);
                 flush_oper(&mut oper_val, &mut tokens);
-                if *char == '\n' {
-                    newline_counter += 1;
-                }
             } else if is_token_sep(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
-                flush_int(&mut integer, &mut tokens);
+                flush_int(&mut integer, &mut tokens)?;
                 let sep = match comp_sep(char) {
                     Some(separator) => LexerCartegories::Separator(separator),
                     None => todo!(),
                 };
                 tokens.push(sep);
             } else if is_token_oper(char) {
-                flush_int(&mut integer, &mut tokens);
+                flush_int(&mut integer, &mut tokens)?;
                 flush_keyword(&mut keyword_value, &mut tokens);
                 let sub = *char;
                 if *char == '-' && chars.get(i + 1).is_some_and(|char| *char == '>') {
@@ -220,21 +140,29 @@ pub mod tokenizer {
                 };
             } else if is_token_comp(char) {
                 flush_keyword(&mut keyword_value, &mut tokens);
-                flush_int(&mut integer, &mut tokens);
+                flush_int(&mut integer, &mut tokens)?;
                 oper_val.push(*char);
                 if oper_val.len() == 2 {
                     flush_oper(&mut oper_val, &mut tokens);
                 }
             } else {
-                println!("Found smth else: {:?} on line {newline_counter}", char);
+                todo!()
             }
         }
-        flush_int(&mut integer, &mut tokens);
         flush_keyword(&mut keyword_value, &mut tokens);
         tokens.push(EndOfFile);
-        return tokens;
+        Ok(tokens)
     }
-    fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
+}
+pub mod flush {
+    use crate::{
+        errors::lexer_error::LexerError,
+        lexer::{
+            eval::{comp_block, comp_key, is_block, is_keyword, lex_assign_compare},
+            tokens::types::{LexerCartegories, TokenIdentifier, TokenLiteral},
+        },
+    };
+    pub fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if keyword.is_empty() {
             return;
         }
@@ -256,24 +184,28 @@ pub mod tokenizer {
         }
         tokens.push(LexerCartegories::Identifier(TokenIdentifier::new(val)));
     }
-    fn flush_int(int: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
+    pub fn flush_int(
+        int: &mut Vec<char>,
+        tokens: &mut Vec<LexerCartegories>,
+    ) -> Result<(), LexerError> {
         if int.is_empty() {
-            return;
+            return Ok(());
         }
         let value: String = int.drain(..).collect();
-        if value.matches('.').count() == 1 {
-            match value.parse::<f64>() {
-                Ok(f) => tokens.push(LexerCartegories::Literal(TokenLiteral::Float(f))),
-                Err(e) => println!("Error{:?}", e),
+        match value.matches('.').count() {
+            0_usize => {
+                let i = value.parse::<i64>().map_err(|_| LexerError::FloatError)?;
+                tokens.push(LexerCartegories::Literal(TokenLiteral::Integer(i)))
             }
-        } else {
-            match value.parse::<i64>() {
-                Ok(i) => tokens.push(LexerCartegories::Literal(TokenLiteral::Integer(i))),
-                Err(e) => println!("Error{:?}", e),
+            1_usize => {
+                let val = value.parse::<f64>().map_err(|_| LexerError::FloatError)?;
+                tokens.push(LexerCartegories::Literal(TokenLiteral::Float(val)))
             }
-        };
+            2_usize.. => return Err(LexerError::InvalidDigitError(value.clone())),
+        }
+        Ok(())
     }
-    fn flush_oper(oper: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
+    pub fn flush_oper(oper: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if oper.is_empty() {
             return;
         } else if !oper.is_empty() && oper.len() <= 2 {

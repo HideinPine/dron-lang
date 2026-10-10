@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::types::{LexerCartegories, TokenIdentifier};
+    use crate::lexer::tokens::types::{LexerCartegories, TokenIdentifier};
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
     #[derive(Debug)]
     pub enum KeywordStuff {
@@ -41,7 +41,9 @@ pub mod definition {
     }
 }
 pub mod parse_keywords {
-    use crate::lexer::types::{LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator};
+    use crate::lexer::tokens::types::{
+        LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator,
+    };
     use crate::parser::{
         errors::parser_error::ParserError,
         keyword::definition::{EnumDef, FunDef, KeywordStuff, StructDef},

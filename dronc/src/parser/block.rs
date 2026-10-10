@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::types::LexerCartegories;
+    use crate::lexer::tokens::types::LexerCartegories;
     // TokenBlock + TokenSeparator(OpenCurl) + ... + TokenSeparator(CloseCurl)
     #[derive(Debug)]
     pub struct GhostDef {
@@ -10,16 +10,23 @@ pub mod definition {
         pub content: Option<Vec<LexerCartegories>>,
     }
     #[derive(Debug)]
+    pub struct EphReg {
+        pub name: Option<String>,
+        pub content: Option<Vec<LexerCartegories>>,
+    }
+
+    #[derive(Debug)]
     pub enum BlockStuff {
         Ghost(GhostDef),
         Unsafe(UnsafeDef),
+        Ephemeral(EphReg),
     }
 }
 
 pub mod parse_blocks {
-    use crate::lexer::types::{LexerCartegories, TokenBlock, TokenSeparator};
+    use crate::lexer::tokens::types::{LexerCartegories, TokenBlock, TokenSeparator};
     use crate::parser::{
-        block::definition::{BlockStuff, GhostDef, UnsafeDef},
+        block::definition::{BlockStuff, EphReg, GhostDef, UnsafeDef},
         errors::parser_error::ParserError,
         stmt::Parser,
     };
@@ -35,6 +42,9 @@ pub mod parse_blocks {
                 }
                 TokenBlock::Unsafe => {
                     blockstuffvec.push(BlockStuff::Unsafe(self.parse_unsafe()?));
+                }
+                TokenBlock::EphemeralRegion => {
+                    blockstuffvec.push(BlockStuff::Ephemeral(self.parse_ephemeral()?));
                 }
             }
             Ok(blockstuffvec)
@@ -74,6 +84,31 @@ pub mod parse_blocks {
             }
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(UnsafeDef {
+                content: Some(body),
+            })
+        }
+        fn parse_ephemeral(&mut self) -> Result<EphReg, ParserError> {
+            self.expect(LexerCartegories::Block(TokenBlock::EphemeralRegion))?;
+            let name = match self.temporal() {
+                Some(LexerCartegories::Identifier(n)) => n.0.clone(),
+                Some(tokens) => return Err(ParserError::UnexpectedToken(tokens.clone())),
+                None => return Err(ParserError::UnexpectedEOF),
+            };
+            self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
+            let mut body: Vec<LexerCartegories> = Vec::new();
+            while let Some(field) = self.peek() {
+                if let LexerCartegories::Separator(TokenSeparator::RightCurl) = field {
+                    break;
+                }
+                body.push(field.clone());
+                self.pos += 1;
+                if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
+                    self.pos += 1;
+                }
+            }
+            self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
+            Ok(EphReg {
+                name: Some(name),
                 content: Some(body),
             })
         }

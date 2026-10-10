@@ -1,0 +1,15 @@
+
+// Every function to return a result so unit()
+fn main() {
+
+}
+
+#!(alloc) /* The ! means the function may never fail.. alloc*/
+fn function_1() {
+    eph_region {
+        /*
+         * ephemeral region where all memory allocated
+         * here is freed once the block ends
+        */
+    }
+}

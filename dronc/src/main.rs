@@ -13,14 +13,14 @@ fn get_file() -> String {
         Some(file) => file.as_str(),
         None => {
             //println!("\nNo file path provided... \nRunning default..\n");
-            "../lang-syntax/struct.rn"
+            "../lang-syntax/integer.rn"
         }
     };
     //let file_path = &args[1];
     let file: Result<String, std::io::Error> = fs::read_to_string(path);
     match file {
         Ok(string) => string,
-        Err(..) => String::from("../tests/main.hv"),
+        Err(..) => String::from("../lang-syntax/integer.rn"),
     }
 }
 
@@ -32,6 +32,12 @@ fn main() {
     let file = get_file();
     //println!("{}", file);
     let chars = to_char(file);
-    let tokenized = tokenizer::tokenize(chars);
+    let tokenized = match tokenizer::tokenize(chars) {
+        Ok(t) => t,
+        Err(e) => {
+            println!("Error: {:?}", e);
+            return;
+        }
+    };
     get_tokens(tokenized);
 }

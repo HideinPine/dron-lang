@@ -1,5 +1,21 @@
+pub mod lexer_error {
+    #[derive(Debug)]
+    pub enum LexerError {
+        FloatError,
+        InvalidDigitError(String),
+    }
+    impl std::error::Error for LexerError {}
+    impl std::fmt::Display for LexerError {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+            match self {
+                LexerError::FloatError => write!(f, "Too many points.. not a valid decimal"),
+                LexerError::InvalidDigitError(e) => write!(f, "Invalid digit: {:?}", e),
+            }
+        }
+    }
+}
 pub mod parser_error {
-    use crate::lexer::types::LexerCartegories;
+    use crate::lexer::tokens::types::LexerCartegories;
     #[derive(Debug)]
     pub enum ParserError {
         UnexpectedToken(LexerCartegories),
