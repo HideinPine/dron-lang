@@ -2,6 +2,7 @@
 pub mod block;
 pub mod errors;
 pub mod keyword;
+pub mod statements;
 
 pub mod stmt {
     use crate::lexer::tokens::types::LexerCartegories;
@@ -9,6 +10,7 @@ pub mod stmt {
         block::definition::BlockStuff,
         errors::parser_error::{InvalidTokenError, ParserError},
         keyword::definition::KeywordStuff,
+        statements::definition::StateStuff,
     };
     use owo_colors::OwoColorize;
     #[allow(dead_code)]
@@ -16,6 +18,7 @@ pub mod stmt {
     pub struct ParseTypes {
         blocks: Vec<BlockStuff>,
         keywords: Vec<KeywordStuff>,
+        states: Vec<StateStuff>,
     }
     pub struct Parser<'a> {
         pub tokens: &'a [LexerCartegories],
@@ -25,6 +28,7 @@ pub mod stmt {
         pub fn parse_program(&mut self) -> Result<ParseTypes, ParserError> {
             let mut keywords_vec: Vec<KeywordStuff> = Vec::new();
             let mut blocks_vec: Vec<BlockStuff> = Vec::new();
+            let mut state_vec: Vec<StateStuff> = Vec::new();
             // if let Some(LexerCartegories::Keyword(TokenKeyword::Struct)) = self.peek() {
             //     //TODO: Solve for repetitive code here later
             while let Some(tok) = self.peek().cloned() {
@@ -39,12 +43,19 @@ pub mod stmt {
                         blocks_vec.extend(block_value);
                         // stuffvec.extend(block_value.into_iter().map(ParseTypes::Blocks));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other.clone())),
+                    LexerCartegories::Statement(state) => {
+                        let item = self.statement_parse(&state)?;
+                        state_vec.extend(item);
+                    }
+                    other => {
+                        return Err(ParserError::UnexpectedToken(other.clone()));
+                    }
                 };
             }
             Ok(ParseTypes {
                 blocks: blocks_vec,
                 keywords: keywords_vec,
+                states: state_vec,
             })
         }
         pub fn temporal(&mut self) -> Option<&LexerCartegories> {

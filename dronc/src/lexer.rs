@@ -4,6 +4,7 @@ pub mod eval {
     use crate::lexer::tokens::types::{
         LexerCartegories::{self, Assign, Compare},
         TokenAssign, TokenBlock, TokenCompare, TokenKeyword, TokenOperator, TokenSeparator,
+        TokenState,
     };
     pub fn comp_assign(comp: char) -> Option<TokenAssign> {
         match comp {
@@ -80,6 +81,15 @@ pub mod eval {
     }
     pub fn is_keyword(val: &str) -> bool {
         comp_key(val).is_some()
+    }
+    pub fn comp_state(state: &str) -> Option<TokenState> {
+        match state {
+            "let" => Some(TokenState::VariableDeclaration),
+            _ => None,
+        }
+    }
+    pub fn is_state(state: &str) -> bool {
+        comp_state(state).is_some()
     }
 }
 
@@ -159,7 +169,10 @@ pub mod flush {
     use crate::{
         errors::lexer_error::LexerError,
         lexer::{
-            eval::{comp_block, comp_key, is_block, is_keyword, lex_assign_compare},
+            eval::{
+                comp_block, comp_key, comp_state, is_block, is_keyword, is_state,
+                lex_assign_compare,
+            },
             tokens::types::{LexerCartegories, TokenIdentifier, TokenLiteral},
         },
     };
@@ -181,6 +194,13 @@ pub mod flush {
                 None => LexerCartegories::Identifier(TokenIdentifier::new(val)),
             };
             tokens.push(value);
+            return;
+        } else if is_state(val.as_str()) {
+            let statement = match comp_state(val.as_str()) {
+                Some(state) => LexerCartegories::Statement(state),
+                None => LexerCartegories::Identifier(TokenIdentifier::new(val.clone())),
+            };
+            tokens.push(statement);
             return;
         }
         tokens.push(LexerCartegories::Identifier(TokenIdentifier::new(val)));

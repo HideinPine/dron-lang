@@ -5,7 +5,8 @@ pub mod types {
         Block(TokenBlock),
         Separator(TokenSeparator), /* 1st: PAUSE -- ALMOST DONE*/
         Literal(TokenLiteral),     /* LATER ON WHEN NEEDED */
-        Operator(TokenOperator),   /* 2nd: PAUSE -- ALMOST DONE */
+        Statement(TokenState),
+        Operator(TokenOperator), /* 2nd: PAUSE -- ALMOST DONE */
         Identifier(TokenIdentifier),
         Compare(TokenCompare),
         Assign(TokenAssign),
@@ -71,6 +72,18 @@ pub mod types {
         pub fn new(val: String) -> Self {
             TokenIdentifier(val)
         }
+    }
+    #[derive(Debug, PartialEq, Clone)]
+    pub enum TokenState {
+        VariableDeclaration,
+        //Control flow:
+        If,
+        // ElseIf,
+        Else,
+        While,
+        For,
+        Return,
+        Continue,
     }
     #[derive(Debug)]
     pub struct Arguments {

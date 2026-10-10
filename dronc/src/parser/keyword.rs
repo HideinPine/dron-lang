@@ -89,10 +89,7 @@ pub mod parse_keywords {
                     Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                     None => return Err(ParserError::UnexpectedEOF),
                 };
-                args.push(Arguments {
-                    name,
-                    arg_type,
-                });
+                args.push(Arguments { name, arg_type });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
                     self.pos += 1;
                 }
@@ -124,10 +121,7 @@ pub mod parse_keywords {
                     Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                     None => return Err(ParserError::UnexpectedEOF),
                 };
-                body.push(Arguments {
-                    name,
-                    arg_type,
-                });
+                body.push(Arguments { name, arg_type });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
                     self.pos += 1;
                 }
