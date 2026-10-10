@@ -1,3 +1,6 @@
-fn main() {
-
+fn foo(x:i32,y:i32){}
+fn faa() {}
+struct ParseError {
+    blocks: BlockStuff,
+    keywords: KeywordStuff,
 }

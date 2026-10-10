@@ -23,7 +23,11 @@ or u need to go through hours of docs and tutorials for what i may need.
 ```
 > File being used (main.rn)
 ```
-  fn main() {}
-  enum Color{Red, Blue}
-  struct Values{}
+  fn foo(x:i32,y:i32){}
+  fn faa() {}
+  struct ParseError {
+    blocks: BlockStuff,
+    keywords: KeywordStuff,
+  }
+
 ```
