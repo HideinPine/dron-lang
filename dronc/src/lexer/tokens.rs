@@ -32,6 +32,7 @@ pub mod types {
         LeftCurl,
         RightCurl,
         Comma,
+        Colon,
         /* TODO: Dot, Colon, */
     }
     #[derive(Debug, PartialEq, Clone)]
@@ -70,5 +71,11 @@ pub mod types {
         pub fn new(val: String) -> Self {
             TokenIdentifier(val)
         }
+    }
+    #[derive(Debug)]
+    pub struct Arguments {
+        pub name: TokenIdentifier,
+        // colon: TokenSeparator,
+        pub arg_type: TokenIdentifier,
     }
 }

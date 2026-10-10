@@ -40,6 +40,7 @@ pub mod eval {
             '}' => Some(TokenSeparator::RightCurl),
             ';' => Some(TokenSeparator::SemiColon),
             ',' => Some(TokenSeparator::Comma),
+            ':' => Some(TokenSeparator::Colon),
             _ => None,
         }
     }

@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::tokens::types::{LexerCartegories, TokenIdentifier};
+    use crate::lexer::tokens::types::{Arguments, LexerCartegories, TokenIdentifier};
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
     #[derive(Debug)]
     pub enum KeywordStuff {
@@ -10,7 +10,7 @@ pub mod definition {
     #[derive(Debug)]
     pub struct StructDef {
         pub name: TokenIdentifier,
-        pub fields: Option<Vec<TokenIdentifier>>,
+        pub fields: Option<Vec<Arguments>>,
     }
     #[derive(Debug)]
     pub struct EnumDef {
@@ -21,10 +21,11 @@ pub mod definition {
     #[derive(Debug)]
     pub struct FunDef {
         pub fname: String,
-        pub args: Option<Vec<TokenIdentifier>>,
+        pub args: Option<Vec<Arguments>>,
         // Add return logic here for named return.. none named return etc.
         pub body: Option<Vec<LexerCartegories>>,
     }
+
     impl FunDef {
         pub fn new() -> Self {
             FunDef {
@@ -42,7 +43,7 @@ pub mod definition {
 }
 pub mod parse_keywords {
     use crate::lexer::tokens::types::{
-        LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator,
+        Arguments, LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator,
     };
     use crate::parser::{
         errors::parser_error::ParserError,
@@ -79,10 +80,19 @@ pub mod parse_keywords {
                 None => return Err(ParserError::UnexpectedEOF),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftBrace))?;
-            let mut args = Vec::new();
-            while let Some(LexerCartegories::Identifier(arg)) = self.peek() {
-                args.push(arg.clone());
+            let mut args: Vec<Arguments> = Vec::new();
+            while let Some(LexerCartegories::Identifier(name)) = self.peek().cloned() {
                 self.pos += 1;
+                self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
+                let arg_type = match self.temporal() {
+                    Some(LexerCartegories::Identifier(t)) => t.clone(),
+                    Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
+                    None => return Err(ParserError::UnexpectedEOF),
+                };
+                args.push(Arguments {
+                    name,
+                    arg_type,
+                });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
                     self.pos += 1;
                 }
@@ -105,10 +115,19 @@ pub mod parse_keywords {
                 None => return Err(ParserError::UnexpectedEOF),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
-            let mut body: Vec<TokenIdentifier> = Vec::new();
-            while let Some(LexerCartegories::Identifier(field)) = self.peek() {
-                body.push(field.clone());
+            let mut body: Vec<Arguments> = Vec::new();
+            while let Some(LexerCartegories::Identifier(name)) = self.peek().cloned() {
                 self.pos += 1;
+                self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
+                let arg_type = match self.temporal() {
+                    Some(LexerCartegories::Identifier(t)) => t.clone(),
+                    Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
+                    None => return Err(ParserError::UnexpectedEOF),
+                };
+                body.push(Arguments {
+                    name,
+                    arg_type,
+                });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
                     self.pos += 1;
                 }

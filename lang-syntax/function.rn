@@ -1,5 +1,6 @@
-fn foo(){}
-fn (){}
-fn example(val2,mal332) {} ++
-fn make
-enum {}
+fn foo(x:i32,y:i32){}
+fn faa() {}
+struct ParseError {
+    blocks: BlockStuff,
+    keywords: KeywordStuff,
+}
