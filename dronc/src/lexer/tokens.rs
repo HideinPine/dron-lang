@@ -85,7 +85,7 @@ pub mod types {
         Return,
         Continue,
     }
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct Arguments {
         pub name: TokenIdentifier,
         // colon: TokenSeparator,

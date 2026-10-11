@@ -1,7 +1,8 @@
 #![allow(unused)]
 use crate::lexer::tokenizer;
 use crate::parser::{errors, stmt::get_tokens};
-use std::{env, fs};
+use owo_colors::OwoColorize;
+use std::{env, fs, time::Instant};
 mod lexer;
 mod parser;
 
@@ -29,6 +30,7 @@ fn to_char(file: String) -> Vec<char> {
 }
 
 fn main() {
+    let start = Instant::now();
     let file = get_file();
     //println!("{}", file);
     let chars = to_char(file);
@@ -40,4 +42,6 @@ fn main() {
         }
     };
     get_tokens(tokenized);
+    let end = Instant::now();
+    println!("\t{} in {:?}", "Finished".bold().green(), end - start);
 }

@@ -1,10 +1,15 @@
 pub mod definition {
     use crate::lexer::tokens::types::{TokenIdentifier, TokenLiteral};
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct VariableDef {
         pub identifier: TokenIdentifier,
         pub kind: TokenIdentifier,
-        pub value: TokenLiteral,
+        pub value: Value,
+    }
+    #[derive(Debug, Clone)]
+    pub enum Value {
+        Identifier(TokenIdentifier),
+        Literal(TokenLiteral),
     }
     #[derive(Debug)]
     pub enum StateStuff {
@@ -16,7 +21,7 @@ pub mod parse_state {
     use crate::lexer::tokens::types::{LexerCartegories, TokenAssign, TokenSeparator, TokenState};
     use crate::parser::{
         errors::parser_error::ParserError,
-        statements::definition::{StateStuff, VariableDef},
+        statements::definition::{StateStuff, Value, VariableDef},
         stmt::Parser,
     };
     impl<'a> Parser<'a> {
@@ -51,7 +56,8 @@ pub mod parse_state {
             };
             self.expect(LexerCartegories::Assign(TokenAssign::Equal))?;
             let value = match self.temporal() {
-                Some(LexerCartegories::Literal(id)) => id.clone(),
+                Some(LexerCartegories::Literal(id)) => Value::Literal(id.clone()),
+                Some(LexerCartegories::Identifier(id)) => Value::Identifier(id.clone()),
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 None => return Err(ParserError::UnexpectedEOF),
             };

@@ -15,7 +15,7 @@ pub mod stmt {
     use owo_colors::OwoColorize;
     #[allow(dead_code)]
     #[derive(Debug)]
-    pub struct ParseTypes {
+    pub struct AbstractSyntaxTree {
         blocks: Vec<BlockStuff>,
         keywords: Vec<KeywordStuff>,
         states: Vec<StateStuff>,
@@ -25,7 +25,7 @@ pub mod stmt {
         pub pos: usize,
     }
     impl<'a> Parser<'a> {
-        pub fn parse_program(&mut self) -> Result<ParseTypes, ParserError> {
+        pub fn parse_program(&mut self) -> Result<AbstractSyntaxTree, ParserError> {
             let mut keywords_vec: Vec<KeywordStuff> = Vec::new();
             let mut blocks_vec: Vec<BlockStuff> = Vec::new();
             let mut state_vec: Vec<StateStuff> = Vec::new();
@@ -41,7 +41,7 @@ pub mod stmt {
                     LexerCartegories::Block(block) => {
                         let block_value = self.block_parse(&block)?;
                         blocks_vec.extend(block_value);
-                        // stuffvec.extend(block_value.into_iter().map(ParseTypes::Blocks));
+                        // stuffvec.extend(block_value.into_iter().map(AbstractSyntaxTree::Blocks));
                     }
                     LexerCartegories::Statement(state) => {
                         let item = self.statement_parse(&state)?;
@@ -52,7 +52,7 @@ pub mod stmt {
                     }
                 };
             }
-            Ok(ParseTypes {
+            Ok(AbstractSyntaxTree {
                 blocks: blocks_vec,
                 keywords: keywords_vec,
                 states: state_vec,
