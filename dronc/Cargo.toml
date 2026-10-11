@@ -5,3 +5,6 @@ edition = "2024"
 
 [dependencies]
 owo-colors = "4.4.0"
+
+[profile.release]
+debug = true

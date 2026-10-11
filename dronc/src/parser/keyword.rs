@@ -1,6 +1,6 @@
 pub mod definition {
     use crate::lexer::tokens::types::{Arguments, TokenIdentifier};
-    use crate::parser::statements::definition::VariableDef;
+    use crate::parser::statements::definition::{VariableDef, RetDef};
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
     #[derive(Debug)]
     pub enum KeywordStuff {
@@ -39,6 +39,8 @@ pub mod definition {
         Func(FunDef),
         Var(VariableDef),
         Block(Block),
+        Return(RetDef),
+        // Continue(Cont)
     }
 }
 pub mod parse_keywords {
@@ -123,6 +125,10 @@ pub mod parse_keywords {
                     LexerCartegories::Statement(TokenState::VariableDeclaration) => {
                         let value = self.parse_variable()?;
                         stack.last_mut().unwrap().push(Body::Var(value));
+                    }
+                    LexerCartegories::Statement(TokenState::Return) => {
+                        let value = self.parse_ret()?;
+                        stack.last_mut().unwrap().push(Body::Return(value));
                     }
                     other => return Err(ParserError::UnexpectedToken(other)),
                 }

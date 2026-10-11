@@ -6,7 +6,7 @@ pub mod definition {
         pub kind: TokenIdentifier,
         pub value: Value,
     }
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub struct RetDef {
         pub identifier: Option<Value>,
     }
@@ -19,7 +19,7 @@ pub mod definition {
     pub enum StateStuff {
         Var(VariableDef),
         Ret(RetDef),
-        Continue,
+        Cont(()),
         Break,
     }
 }
@@ -49,9 +49,17 @@ pub mod parse_state {
                 TokenState::Return => {
                     statestuffvec.push(StateStuff::Ret(self.parse_ret()?))
                 }
+                TokenState::Continue => {
+                    statestuffvec.push(StateStuff::Cont(self.parse_cont()?))
+                }
                 _ => todo!(),
             }
             Ok(statestuffvec)
+        }
+        pub fn parse_cont(&mut self) -> Result<(), ParserError> {
+            self.expect(LexerCartegories::Statement(TokenState::Continue))?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
+            Ok(())
         }
         pub fn parse_ret(&mut self) -> Result<RetDef, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::Return))?;
