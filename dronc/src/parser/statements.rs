@@ -6,6 +6,10 @@ pub mod definition {
         pub kind: TokenIdentifier,
         pub value: Value,
     }
+    #[derive(Debug)]
+    pub struct RetDef {
+        pub identifier: Option<Value>,
+    }
     #[derive(Debug, Clone)]
     pub enum Value {
         Identifier(TokenIdentifier),
@@ -14,14 +18,19 @@ pub mod definition {
     #[derive(Debug)]
     pub enum StateStuff {
         Var(VariableDef),
+        Ret(RetDef),
+        Continue,
+        Break,
     }
 }
 
 pub mod parse_state {
-    use crate::lexer::tokens::types::{LexerCartegories, TokenAssign, TokenSeparator, TokenState};
+    use crate::lexer::tokens::types::{
+        LexerCartegories, TokenAssign, TokenIdentifier, TokenSeparator, TokenState,
+    };
     use crate::parser::{
         errors::parser_error::ParserError,
-        statements::definition::{StateStuff, Value, VariableDef},
+        statements::definition::{RetDef, StateStuff, Value, VariableDef},
         stmt::Parser,
     };
     impl<'a> Parser<'a> {
@@ -37,9 +46,26 @@ pub mod parse_state {
                 TokenState::VariableDeclaration => {
                     statestuffvec.push(StateStuff::Var(self.parse_variable()?))
                 }
+                TokenState::Return => {
+                    statestuffvec.push(StateStuff::Ret(self.parse_ret()?))
+                }
                 _ => todo!(),
             }
             Ok(statestuffvec)
+        }
+        pub fn parse_ret(&mut self) -> Result<RetDef, ParserError> {
+            self.expect(LexerCartegories::Statement(TokenState::Return))?;
+            let identifier = match self.temporal() {
+                Some(LexerCartegories::Identifier(n)) => Value::Identifier(n.clone()),
+                Some(LexerCartegories::Literal(id)) => Value::Literal(id.clone()),
+                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
+                // TODO => Return above stuff not anything else..
+                None => return Ok(RetDef{identifier: Some(Value::Identifier(TokenIdentifier::new(String::new())))}),
+            };
+            self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
+            Ok(RetDef {
+                identifier: Some(identifier),
+            })
         }
         pub fn parse_variable(&mut self) -> Result<VariableDef, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::VariableDeclaration))?;

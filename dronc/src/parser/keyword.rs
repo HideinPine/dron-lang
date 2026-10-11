@@ -26,11 +26,12 @@ pub mod definition {
         // Add return logic here for named return.. none named return etc.
         pub body: Vec<Body>,
     }
+    #[allow(unused)]
     #[derive(Debug, Clone)]
     pub struct Block(Box<Vec<Body>>);
     impl Block {
-        pub fn new(body: Vec<Body>){
-            Block(Box::new(body));
+        pub fn new(body: Vec<Body>) -> Self {
+            Block(Box::new(body))
         }
     }
     #[derive(Debug, Clone)]
@@ -46,7 +47,7 @@ pub mod parse_keywords {
     };
     use crate::parser::{
         errors::parser_error::ParserError,
-        keyword::definition::{Body, EnumDef, Block, FunDef, KeywordStuff, StructDef},
+        keyword::definition::{Block, Body, EnumDef, FunDef, KeywordStuff, StructDef},
         stmt::Parser,
     };
     impl<'a> Parser<'a> {
@@ -72,7 +73,7 @@ pub mod parse_keywords {
             Ok(keywordstuffvec)
         }
         pub fn parse_function(&mut self) -> Result<FunDef, ParserError> {
-            let mut depth = 0;
+            // let mut depth = 0;
             self.expect(LexerCartegories::Keyword(TokenKeyword::Function))?;
             let fname = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.0.clone(),
@@ -96,33 +97,37 @@ pub mod parse_keywords {
             }
             self.expect(LexerCartegories::Separator(TokenSeparator::RightBrace))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
-            depth += 1;
-            let mut body: Vec<Body> = Vec::new();
-            let block_body: Vec<Body> = Vec::new();
-            let value = Block::new(block_body.clone());
-            while depth > 0 {
-                match self.peek().cloned() {
-                       Some(LexerCartegories::Separator(TokenSeparator::LeftCurl)) => {
-                           depth += 1;
-                           //Block logic starts here tbh.
-                           let _block = value;
-                           self.pos += 1;
-                       }
-                       Some(LexerCartegories::Separator(TokenSeparator::RightCurl)) => {
-                           depth -= 1;
-                           self.pos += 1;
-                       }
-                       Some(LexerCartegories::Keyword(TokenKeyword::Function)) => {
-                           body.push(Body::Func(self.parse_function()?));
-                       }
-                       Some(LexerCartegories::Statement(TokenState::VariableDeclaration)) => {
-                           body.push(Body::Var(self.parse_variable()?));
-                       }
-
-                       Some(other) => return Err(ParserError::UnexpectedToken(other)),
-                       None => return Err(ParserError::UnexpectedEOF),
-                   }
+            // depth += 1;let mut stack: Vec<Vec<Body>> = vec![Vec::new()];   // the function's body
+            let mut stack: Vec<Vec<Body>> = vec![Vec::new()];
+            while let Some(token) = self.peek().cloned() {
+                match token {
+                    LexerCartegories::Separator(TokenSeparator::LeftCurl) => {
+                        stack.push(Vec::new());
+                        self.pos += 1;
+                    }
+                    LexerCartegories::Separator(TokenSeparator::RightCurl) => {
+                        self.pos += 1;
+                        if stack.len() == 1 {
+                            break;
+                        }
+                        let inner = stack.pop().unwrap();
+                        stack
+                            .last_mut()
+                            .unwrap()
+                            .push(Body::Block(Block::new(inner)));
+                    }
+                    LexerCartegories::Keyword(TokenKeyword::Function) => {
+                        let value = self.parse_function()?;
+                        stack.last_mut().unwrap().push(Body::Func(value));
+                    }
+                    LexerCartegories::Statement(TokenState::VariableDeclaration) => {
+                        let value = self.parse_variable()?;
+                        stack.last_mut().unwrap().push(Body::Var(value));
+                    }
+                    other => return Err(ParserError::UnexpectedToken(other)),
+                }
             }
+            let body = stack.pop().unwrap();
             Ok(FunDef { fname, args, body })
         }
         pub fn parse_struct(&mut self) -> Result<StructDef, ParserError> {

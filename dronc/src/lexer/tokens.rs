@@ -76,14 +76,13 @@ pub mod types {
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenState {
         VariableDeclaration,
-        //Control flow:
         If,
-        // ElseIf,
         Else,
         While,
         For,
         Return,
         Continue,
+        Break,
     }
     #[derive(Debug, Clone)]
     pub struct Arguments {

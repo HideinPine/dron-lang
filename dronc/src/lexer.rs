@@ -85,6 +85,9 @@ pub mod eval {
     pub fn comp_state(state: &str) -> Option<TokenState> {
         match state {
             "let" => Some(TokenState::VariableDeclaration),
+            "break" => Some(TokenState::Break),
+            "continue" => Some(TokenState::Continue),
+            "return" => Some(TokenState::Return),
             _ => None,
         }
     }
