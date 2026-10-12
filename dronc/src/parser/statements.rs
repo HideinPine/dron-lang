@@ -20,7 +20,7 @@ pub mod definition {
         Var(VariableDef),
         Ret(RetDef),
         Cont(()),
-        Break,
+        Break(()),
     }
 }
 
@@ -46,15 +46,17 @@ pub mod parse_state {
                 TokenState::VariableDeclaration => {
                     statestuffvec.push(StateStuff::Var(self.parse_variable()?))
                 }
-                TokenState::Return => {
-                    statestuffvec.push(StateStuff::Ret(self.parse_ret()?))
-                }
-                TokenState::Continue => {
-                    statestuffvec.push(StateStuff::Cont(self.parse_cont()?))
-                }
+                TokenState::Return => statestuffvec.push(StateStuff::Ret(self.parse_ret()?)),
+                TokenState::Continue => statestuffvec.push(StateStuff::Cont(self.parse_cont()?)),
+                TokenState::Break => statestuffvec.push(StateStuff::Break(self.parse_break()?)),
                 _ => todo!(),
             }
             Ok(statestuffvec)
+        }
+        pub fn parse_break(&mut self) -> Result<(), ParserError> {
+            self.expect(LexerCartegories::Statement(TokenState::Break))?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
+            Ok(())
         }
         pub fn parse_cont(&mut self) -> Result<(), ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::Continue))?;
@@ -68,7 +70,11 @@ pub mod parse_state {
                 Some(LexerCartegories::Literal(id)) => Value::Literal(id.clone()),
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 // TODO => Return above stuff not anything else..
-                None => return Ok(RetDef{identifier: Some(Value::Identifier(TokenIdentifier::new(String::new())))}),
+                None => {
+                    return Ok(RetDef {
+                        identifier: Some(Value::Identifier(TokenIdentifier::new(String::new()))),
+                    });
+                }
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(RetDef {

@@ -57,6 +57,14 @@ pub mod types {
         Mul,
         Div,
     }
+    impl TokenOperator {
+        pub fn influence(&self) -> u8 {
+            match self {
+                TokenOperator::Add | TokenOperator::Sub => 1,
+                TokenOperator::Mul | TokenOperator::Div => 2,
+            }
+        }
+    }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenCompare {
         DoubleEqual,

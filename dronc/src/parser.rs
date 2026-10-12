@@ -89,7 +89,7 @@ pub mod stmt {
             pos: 0,
         };
         match parser.parse_program() {
-            Ok(smth) => println!("\n{:?}", smth.green().bold()),
+            Ok(smth) => println!("\n{:?}", smth.bright_green().bold()),
             Err(er) => println!("{:?}", er),
         }
         println!("\n{:?}", tokens.blue().bold());

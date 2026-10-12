@@ -1,6 +1,6 @@
 pub mod definition {
     use crate::lexer::tokens::types::{Arguments, TokenIdentifier};
-    use crate::parser::statements::definition::{VariableDef, RetDef};
+    use crate::parser::statements::definition::{RetDef, VariableDef};
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
     #[derive(Debug)]
     pub enum KeywordStuff {
