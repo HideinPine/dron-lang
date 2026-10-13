@@ -5,7 +5,7 @@ fn faa() {
             let y: u32 = 9;
         }
     }
-    return 5;
+    return 5 - ;
 }
 break;
 continue;

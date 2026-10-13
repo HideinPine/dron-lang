@@ -9,7 +9,7 @@ pub mod definition {
     }
     #[derive(Debug, Clone)]
     pub struct RetDef {
-        pub identifier: Option<Value>,
+        pub id: Option<Value>,
     }
     #[derive(Debug, Clone)]
     pub enum Value {
@@ -68,20 +68,29 @@ pub mod parse_state {
         }
         pub fn parse_ret(&mut self) -> Result<RetDef, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::Return))?;
-            let identifier = match self.temporal() {
-                Some(LexerCartegories::Identifier(n)) => Value::Identifier(n.clone()),
-                Some(LexerCartegories::Literal(id)) => Value::Literal(id.clone()),
+            let identifier = match self.peek().cloned() {
+                Some(LexerCartegories::Identifier(n)) => {
+                    self.pos += 1;
+                    Value::Identifier(n.clone())
+                }
+                Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
+                    Ok(Expression::Literal(l)) => Value::Literal(l),
+                    Ok(Expression::Operation(smth, smth1)) => {
+                        Value::Express(Expression::Operation(smth, smth1))
+                    }
+                    Err(_) => todo!(),
+                },
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 // TODO => Return above stuff not anything else..
                 None => {
                     return Ok(RetDef {
-                        identifier: Some(Value::Identifier(TokenIdentifier::new(String::new()))),
+                        id: Some(Value::Identifier(TokenIdentifier::new(String::new()))),
                     });
                 }
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(RetDef {
-                identifier: Some(identifier),
+                id: Some(identifier),
             })
         }
         pub fn parse_variable(&mut self) -> Result<VariableDef, ParserError> {
