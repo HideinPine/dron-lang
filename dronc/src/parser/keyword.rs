@@ -1,6 +1,9 @@
 pub mod definition {
     use crate::lexer::tokens::types::{Arguments, TokenIdentifier};
-    use crate::parser::statements::definition::{RetDef, VariableDef};
+    use crate::parser::{
+        expressions::definition::Expression,
+        statements::definition::{RetDef, VariableDef},
+    };
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftCurl + ... +TokenSeparator::RightCurl
     #[derive(Debug)]
     pub enum KeywordStuff {
@@ -38,6 +41,7 @@ pub mod definition {
     pub enum Body {
         Func(FunDef),
         Var(VariableDef),
+        Expression(Expression),
         Block(Block),
         Return(RetDef),
         // Continue(Cont)

@@ -1,5 +1,6 @@
 pub mod definition {
     use crate::lexer::tokens::types::{TokenIdentifier, TokenLiteral};
+    use crate::parser::expressions::definition::Expression;
     #[derive(Debug, Clone)]
     pub struct VariableDef {
         pub identifier: TokenIdentifier,
@@ -14,6 +15,7 @@ pub mod definition {
     pub enum Value {
         Identifier(TokenIdentifier),
         Literal(TokenLiteral),
+        Express(Expression),
     }
     #[derive(Debug)]
     pub enum StateStuff {
@@ -30,6 +32,7 @@ pub mod parse_state {
     };
     use crate::parser::{
         errors::parser_error::ParserError,
+        expressions::definition::Expression,
         statements::definition::{RetDef, StateStuff, Value, VariableDef},
         stmt::Parser,
     };
@@ -95,12 +98,26 @@ pub mod parse_state {
                 None => return Err(ParserError::UnexpectedEOF),
             };
             self.expect(LexerCartegories::Assign(TokenAssign::Equal))?;
-            let value = match self.temporal() {
-                Some(LexerCartegories::Literal(id)) => Value::Literal(id.clone()),
-                Some(LexerCartegories::Identifier(id)) => Value::Identifier(id.clone()),
+            // self.pos += 1;
+            let value = match self.peek().cloned() {
+                Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
+                    Ok(Expression::Literal(l)) => {
+                        // self.pos += 1;
+                        Value::Literal(l)
+                    }
+                    Ok(Expression::Operation(smth, smth1)) => {
+                        Value::Express(Expression::Operation(smth, smth1))
+                    }
+                    Err(_) => todo!(),
+                },
+                Some(LexerCartegories::Identifier(id)) => {
+                    // self.pos += 1;
+                    Value::Identifier(id.clone())
+                }
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 None => return Err(ParserError::UnexpectedEOF),
             };
+            // self.pos += 1;
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(VariableDef {
                 identifier,

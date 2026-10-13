@@ -58,10 +58,10 @@ pub mod types {
         Div,
     }
     impl TokenOperator {
-        pub fn influence(&self) -> u8 {
+        pub fn precedence(&self) -> (u8, u8) {
             match self {
-                TokenOperator::Add | TokenOperator::Sub => 1,
-                TokenOperator::Mul | TokenOperator::Div => 2,
+                TokenOperator::Add | TokenOperator::Sub => (1, 1),
+                TokenOperator::Mul | TokenOperator::Div => (2, 2),
             }
         }
     }
