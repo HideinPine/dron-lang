@@ -1,6 +1,12 @@
-fn foo(x:i32,y:i32){}
-fn faa() {}
-struct ParseError {
-    blocks: BlockStuff,
-    keywords: KeywordStuff,
+fn faa() {
+    let x: u32 = 5;
+    {
+        fn try(){
+            let y: u32 = 9;
+        }
+    }
+    return 5;
 }
+break;
+continue;
+struct Def{}

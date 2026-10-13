@@ -1,12 +1,15 @@
 
-// Every function to return a result so unit()
+/*
+ * Every function to return a result, so unit() if no like result or return value.
+ * But will add a work around if someone doesn't want to =>  must be simple.
+*/
 fn main() {
 
 }
 
 #!(alloc) /* The ! means the function may never fail.. alloc*/
 fn function_1() {
-    eph_region {
+    eph_region @1{
         /*
          * ephemeral region where all memory allocated
          * here is freed once the block ends

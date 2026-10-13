@@ -1,5 +1,4 @@
-struct name{x, y}
-struct val{1.2.3}
-fn main() {}
-enum name{x, y}
-ghost_block{x, t fa}
+fn main() {
+    let var: u32 = 7;
+    return 0;
+}
