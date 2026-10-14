@@ -20,6 +20,7 @@ pub mod parser_error {
     pub enum ParserError {
         UnexpectedToken(LexerCartegories),
         UnexpectedEOF,
+        NotYetImplemented,
         InvalidToken(InvalidTokenError),
     }
     #[derive(Debug)]
@@ -32,6 +33,7 @@ pub mod parser_error {
             match self {
                 ParserError::UnexpectedToken(token) => write!(f, "Unexpected token: {:?}", token),
                 ParserError::UnexpectedEOF => write!(f, "Unexpected end of file"),
+                ParserError::NotYetImplemented => write!(f, "Not yet implemented"),
                 ParserError::InvalidToken(err) => write!(f, "Invalid token: {:?}", err),
             }
         }

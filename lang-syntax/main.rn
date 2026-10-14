@@ -1,12 +1,4 @@
-fn faa() {
-    let x: u32 = 2 + 3 * 3 / 4;
-    {
-        fn try(){
-            let y: u32 = 9;
-        }
-    }
-    return 5 - ;
-}
-break;
-continue;
-struct Def{}
+return 2 + 3 * 4 - 1;
+return 10 - 3 - 1;
+
+if 1 - 8 {} else {}

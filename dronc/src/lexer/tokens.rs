@@ -60,8 +60,8 @@ pub mod types {
     impl TokenOperator {
         pub fn precedence(&self) -> (u8, u8) {
             match self {
-                TokenOperator::Add | TokenOperator::Sub => (1, 1),
-                TokenOperator::Mul | TokenOperator::Div => (2, 2),
+                TokenOperator::Add | TokenOperator::Sub => (2, 3),
+                TokenOperator::Mul | TokenOperator::Div => (3, 4),
             }
         }
     }
@@ -86,6 +86,7 @@ pub mod types {
         VariableDeclaration,
         If,
         Else,
+        ElseIf,
         While,
         For,
         Return,
