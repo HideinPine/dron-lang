@@ -1,6 +1,6 @@
 #![allow(unused)]
 pub mod definition {
-    use crate::lexer::tokens::types::{TokenLiteral, TokenOperator};
+    use crate::lexer::tokens::tokentypes::{TokenLiteral, TokenOperator};
 
     #[derive(Debug, Clone)]
     pub enum Expression {
@@ -10,7 +10,7 @@ pub mod definition {
 }
 
 pub mod parse_express {
-    use crate::lexer::tokens::types::{LexerCartegories, TokenLiteral, TokenOperator};
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenLiteral, TokenOperator};
     use crate::parser::{
         errors::parser_error::ParserError, expressions::definition::Expression,
         statements::definition::Value, stmt::Parser,

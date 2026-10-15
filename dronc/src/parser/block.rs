@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::tokens::types::LexerCartegories;
+    use crate::lexer::tokens::tokentypes::LexerCartegories;
     // TokenBlock + TokenSeparator(OpenCurl) + ... + TokenSeparator(CloseCurl)
     #[derive(Debug)]
     pub struct GhostDef {
@@ -24,7 +24,7 @@ pub mod definition {
 }
 
 pub mod parse_blocks {
-    use crate::lexer::tokens::types::{LexerCartegories, TokenBlock, TokenSeparator};
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenBlock, TokenSeparator};
     use crate::parser::{
         block::definition::{BlockStuff, EphReg, GhostDef, UnsafeDef},
         errors::parser_error::ParserError,

@@ -1,10 +1,14 @@
 pub mod tokens;
 
 pub mod eval {
-    use crate::lexer::tokens::types::{
-        LexerCartegories::{self, Assign, Compare},
-        TokenAssign, TokenBlock, TokenCompare, TokenKeyword, TokenOperator, TokenSeparator,
-        TokenState,
+    #[allow(unused)]
+    use crate::lexer::tokens::{
+        literal_types::{BoolType, FloatType, IntType, LiteralTypes},
+        tokentypes::{
+            LexerCartegories::{self, Assign, Compare},
+            TokenAssign, TokenBlock, TokenCompare, TokenKeyword, TokenLiteral, TokenOperator,
+            TokenSeparator, TokenState,
+        },
     };
     pub fn comp_assign(comp: char) -> Option<TokenAssign> {
         match comp {
@@ -48,6 +52,34 @@ pub mod eval {
     pub fn is_token_sep(pun: &char) -> bool {
         comp_sep(pun).is_some()
     }
+    pub fn comp_type(ty: &str) -> Option<LiteralTypes> {
+        match ty {
+            "u8" => Some(LiteralTypes::Int(IntType::U8)),
+            "u16" => Some(LiteralTypes::Int(IntType::U16)),
+            "u32" => Some(LiteralTypes::Int(IntType::U32)),
+            "u64" => Some(LiteralTypes::Int(IntType::U64)),
+            "i8" => Some(LiteralTypes::Int(IntType::I8)),
+            "i16" => Some(LiteralTypes::Int(IntType::I16)),
+            "i32" => Some(LiteralTypes::Int(IntType::I32)),
+            "i64" => Some(LiteralTypes::Int(IntType::I64)),
+            "f32" => Some(LiteralTypes::Float(FloatType::F32)),
+            "f64" => Some(LiteralTypes::Float(FloatType::F64)),
+            _ => None,
+        }
+    }
+    pub fn is_type(ty: &str) -> bool {
+        comp_type(ty).is_some()
+    }
+    pub fn comp_literal(lit: &str) -> Option<TokenLiteral> {
+        match lit {
+            "true" => Some(TokenLiteral::Boolean(BoolType::TRUE)),
+            "false" => Some(TokenLiteral::Boolean(BoolType::FALSE)),
+            _ => None,
+        }
+    }
+    pub fn is_token_literal(lit: &str) -> bool {
+        comp_literal(lit).is_some()
+    }
     pub fn comp_operator(comp: &char) -> Option<TokenOperator> {
         match comp {
             '+' => Some(TokenOperator::Add),
@@ -84,7 +116,7 @@ pub mod eval {
     }
     pub fn comp_state(state: &str) -> Option<TokenState> {
         match state {
-            "let" => Some(TokenState::VariableDeclaration),
+            "var" => Some(TokenState::VariableDeclaration),
             "if" => Some(TokenState::If),
             "else" => Some(TokenState::Else),
             "elseif" => Some(TokenState::ElseIf),
@@ -103,7 +135,7 @@ pub mod tokenizer {
     use crate::lexer::{
         eval::{comp_operator, comp_sep, is_token_comp, is_token_oper, is_token_sep},
         flush::{flush_int, flush_keyword, flush_oper},
-        tokens::types::LexerCartegories::{self, EndOfFile},
+        tokens::tokentypes::LexerCartegories::{self, EndOfFile},
     };
     use crate::parser::errors::lexer_error::LexerError;
     pub fn tokenize(chars: Vec<char>) -> Result<Vec<LexerCartegories>, LexerError> {
@@ -176,10 +208,10 @@ pub mod flush {
         errors::lexer_error::LexerError,
         lexer::{
             eval::{
-                comp_block, comp_key, comp_state, is_block, is_keyword, is_state,
-                lex_assign_compare,
+                comp_block, comp_key, comp_literal, comp_state, comp_type, is_block, is_keyword,
+                is_state, is_token_literal, is_type, lex_assign_compare,
             },
-            tokens::types::{LexerCartegories, TokenIdentifier, TokenLiteral},
+            tokens::tokentypes::{LexerCartegories, TokenIdentifier, TokenLiteral},
         },
     };
     pub fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
@@ -207,6 +239,20 @@ pub mod flush {
                 None => LexerCartegories::Identifier(TokenIdentifier::new(val.clone())),
             };
             tokens.push(statement);
+            return;
+        } else if is_token_literal(val.as_str()) {
+            let literal = match comp_literal(val.as_str()) {
+                Some(lit) => LexerCartegories::Literal(lit),
+                None => LexerCartegories::Identifier(TokenIdentifier::new(val.clone())),
+            };
+            tokens.push(literal);
+            return;
+        } else if is_type(val.as_str()) {
+            let ty = match comp_type(val.as_str()) {
+                Some(state) => LexerCartegories::LitType(state),
+                None => LexerCartegories::Identifier(TokenIdentifier::new(val.clone())),
+            };
+            tokens.push(ty);
             return;
         }
         tokens.push(LexerCartegories::Identifier(TokenIdentifier::new(val)));

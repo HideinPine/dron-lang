@@ -15,7 +15,7 @@ pub mod lexer_error {
     }
 }
 pub mod parser_error {
-    use crate::lexer::tokens::types::LexerCartegories;
+    use crate::lexer::tokens::tokentypes::LexerCartegories;
     #[derive(Debug)]
     pub enum ParserError {
         UnexpectedToken(LexerCartegories),

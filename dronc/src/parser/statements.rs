@@ -1,10 +1,13 @@
 pub mod definition {
-    use crate::lexer::tokens::types::{TokenIdentifier, TokenLiteral};
+    use crate::lexer::tokens::{
+        literal_types::LiteralTypes,
+        tokentypes::{TokenIdentifier, TokenLiteral},
+    };
     use crate::parser::{compare::definition::Comparison, expressions::definition::Expression};
     #[derive(Debug, Clone)]
     pub struct VariableDef {
         pub identifier: TokenIdentifier,
-        pub kind: TokenIdentifier,
+        pub kind: LiteralTypes,
         pub value: Value,
     }
     #[derive(Debug, Clone)]
@@ -45,7 +48,7 @@ pub mod definition {
 }
 
 pub mod parse_state {
-    use crate::lexer::tokens::types::{
+    use crate::lexer::tokens::tokentypes::{
         LexerCartegories, TokenAssign, TokenIdentifier, TokenSeparator, TokenState,
     };
     use crate::parser::{
@@ -202,7 +205,7 @@ pub mod parse_state {
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
             let kind = match self.temporal() {
-                Some(LexerCartegories::Identifier(literal)) => literal.clone(),
+                Some(LexerCartegories::LitType(ty)) => ty.clone(),
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 None => return Err(ParserError::UnexpectedEOF),
             };

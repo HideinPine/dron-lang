@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::tokens::types::{Arguments, TokenIdentifier};
+    use crate::lexer::tokens::tokentypes::{Arguments, TokenIdentifier};
     use crate::parser::{
         expressions::definition::Expression,
         statements::definition::{RetDef, VariableDef},
@@ -48,7 +48,7 @@ pub mod definition {
     }
 }
 pub mod parse_keywords {
-    use crate::lexer::tokens::types::{
+    use crate::lexer::tokens::tokentypes::{
         Arguments, LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator, TokenState,
     };
     use crate::parser::{

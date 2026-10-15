@@ -7,7 +7,7 @@ pub mod keyword;
 pub mod statements;
 
 pub mod stmt {
-    use crate::lexer::tokens::types::LexerCartegories;
+    use crate::lexer::tokens::tokentypes::LexerCartegories;
     use crate::parser::{
         block::definition::BlockStuff,
         errors::parser_error::{InvalidTokenError, ParserError},

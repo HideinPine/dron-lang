@@ -1,4 +1,6 @@
-pub mod types {
+pub mod tokentypes {
+    #[allow(unused)]
+    use crate::lexer::tokens::literal_types::{BoolType, FloatType, IntType, LiteralTypes};
     #[derive(Debug, PartialEq, Clone)]
     pub enum LexerCartegories {
         Keyword(TokenKeyword), /* 3rd: PAUSE -- ALMOST DONE */
@@ -10,6 +12,7 @@ pub mod types {
         Identifier(TokenIdentifier),
         Compare(TokenCompare),
         Assign(TokenAssign),
+        LitType(LiteralTypes),
         EndOfFile,
     }
 
@@ -44,7 +47,7 @@ pub mod types {
     }
     #[derive(Debug, PartialEq, Clone)]
     pub enum TokenLiteral {
-        Boolean(bool),
+        Boolean(BoolType),
         Integer(i64),
         Float(f64),
         String,
@@ -98,5 +101,33 @@ pub mod types {
         pub name: TokenIdentifier,
         // colon: TokenSeparator,
         pub arg_type: TokenIdentifier,
+    }
+}
+pub mod literal_types {
+    #[derive(PartialEq, Debug, Clone)]
+    pub enum LiteralTypes {
+        Int(IntType),
+        Float(FloatType),
+    }
+    #[derive(PartialEq, Debug, Clone)]
+    pub enum IntType {
+        I8,
+        I16,
+        I32,
+        I64,
+        U8,
+        U16,
+        U32,
+        U64,
+    }
+    #[derive(PartialEq, Debug, Clone)]
+    pub enum FloatType {
+        F32,
+        F64,
+    }
+    #[derive(PartialEq, Debug, Clone)]
+    pub enum BoolType {
+        TRUE,
+        FALSE,
     }
 }

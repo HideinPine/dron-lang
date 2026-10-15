@@ -1,6 +1,6 @@
 #![allow(unused)]
 pub mod definition {
-    use crate::lexer::tokens::types::TokenCompare;
+    use crate::lexer::tokens::tokentypes::TokenCompare;
     use crate::parser::statements::definition::Value;
     #[derive(Debug)]
     pub struct Comparison {
@@ -15,7 +15,7 @@ pub mod parse_compare {
         statements::definition::Value, stmt::Parser,
     };
 
-    use crate::lexer::tokens::types::{LexerCartegories, TokenCompare};
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenCompare};
     impl<'a> Parser<'a> {
         pub fn comparison_parse(&mut self) -> Result<Comparison, ParserError> {
             let left = self.get_value()?;
