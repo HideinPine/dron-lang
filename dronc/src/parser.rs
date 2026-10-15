@@ -1,5 +1,6 @@
 //#![allow(unused)]
 pub mod block;
+pub mod compare;
 pub mod errors;
 pub mod expressions;
 pub mod keyword;
@@ -10,8 +11,9 @@ pub mod stmt {
     use crate::parser::{
         block::definition::BlockStuff,
         errors::parser_error::{InvalidTokenError, ParserError},
+        expressions::definition::Expression,
         keyword::definition::KeywordStuff,
-        statements::definition::StateStuff,
+        statements::definition::{StateStuff, Value},
     };
     use owo_colors::OwoColorize;
     #[allow(dead_code)]
@@ -81,8 +83,27 @@ pub mod stmt {
                 None => Err(ParserError::UnexpectedEOF),
             }
         }
+        pub fn get_value(&mut self) -> Result<Value, ParserError> {
+            match self.peek().cloned() {
+                Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
+                    Ok(Expression::Literal(l)) => {
+                        // self.pos += 1;
+                        Ok(Value::Literal(l))
+                    }
+                    Ok(Expression::Operation(smth, smth1)) => {
+                        Ok(Value::Express(Expression::Operation(smth, smth1)))
+                    }
+                    Err(_) => todo!(),
+                },
+                Some(LexerCartegories::Identifier(id)) => {
+                    self.pos += 1;
+                    Ok(Value::Identifier(id.clone()))
+                }
+                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
+                None => return Err(ParserError::UnexpectedEOF),
+            }
+        }
     }
-
     pub fn get_tokens(tokens: Vec<LexerCartegories>) {
         let mut parser = Parser {
             tokens: &tokens,

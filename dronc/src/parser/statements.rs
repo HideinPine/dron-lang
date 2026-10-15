@@ -1,6 +1,6 @@
 pub mod definition {
     use crate::lexer::tokens::types::{TokenIdentifier, TokenLiteral};
-    use crate::parser::expressions::definition::Expression;
+    use crate::parser::{compare::definition::Comparison, expressions::definition::Expression};
     #[derive(Debug, Clone)]
     pub struct VariableDef {
         pub identifier: TokenIdentifier,
@@ -25,7 +25,8 @@ pub mod definition {
     }
     #[derive(Debug)]
     pub struct IfStuff {
-        pub expression: Expression,
+        //will also contain the elseif stuff
+        pub expression: Comparison,
         pub contains: Vec<Contains>,
     }
     #[derive(Debug)]
@@ -72,6 +73,7 @@ pub mod parse_state {
                 TokenState::Continue => statestuffvec.push(StateStuff::Cont(self.parse_cont()?)),
                 TokenState::Break => statestuffvec.push(StateStuff::Break(self.parse_break()?)),
                 TokenState::If => statestuffvec.push(StateStuff::If(self.parse_if()?)),
+                TokenState::ElseIf => statestuffvec.push(StateStuff::If(self.parse_elseif()?)),
                 TokenState::Else => statestuffvec.push(StateStuff::Else(self.parse_else()?)),
                 _ => return Err(ParserError::NotYetImplemented),
             }
@@ -114,9 +116,36 @@ pub mod parse_state {
                 id: Some(identifier),
             })
         }
+        pub fn parse_elseif(&mut self) -> Result<IfStuff, ParserError> {
+            self.expect(LexerCartegories::Statement(TokenState::ElseIf))?;
+            let expression = self.comparison_parse()?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
+            let mut stack: Vec<Vec<Contains>> = vec![Vec::new()];
+            while let Some(token) = self.peek().cloned() {
+                match token {
+                    LexerCartegories::Separator(TokenSeparator::RightCurl) => break,
+
+                    LexerCartegories::Statement(TokenState::VariableDeclaration) => {
+                        let value = self.parse_variable()?;
+                        stack.last_mut().unwrap().push(Contains::Var(value));
+                    }
+                    LexerCartegories::Statement(TokenState::Return) => {
+                        let value = self.parse_ret()?;
+                        stack.last_mut().unwrap().push(Contains::Return(value));
+                    }
+                    other => return Err(ParserError::UnexpectedToken(other)),
+                }
+            }
+            let contains = stack.pop().unwrap();
+            self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
+            Ok(IfStuff {
+                expression,
+                contains: contains,
+            })
+        }
         pub fn parse_if(&mut self) -> Result<IfStuff, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::If))?;
-            let expression = self.parse_expression(0)?;
+            let expression = self.comparison_parse()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut stack: Vec<Vec<Contains>> = vec![Vec::new()];
             while let Some(token) = self.peek().cloned() {
@@ -179,24 +208,7 @@ pub mod parse_state {
             };
             self.expect(LexerCartegories::Assign(TokenAssign::Equal))?;
             // self.pos += 1;
-            let value = match self.peek().cloned() {
-                Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
-                    Ok(Expression::Literal(l)) => {
-                        // self.pos += 1;
-                        Value::Literal(l)
-                    }
-                    Ok(Expression::Operation(smth, smth1)) => {
-                        Value::Express(Expression::Operation(smth, smth1))
-                    }
-                    Err(_) => todo!(),
-                },
-                Some(LexerCartegories::Identifier(id)) => {
-                    // self.pos += 1;
-                    Value::Identifier(id.clone())
-                }
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
-            };
+            let value = self.get_value()?;
             // self.pos += 1;
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(VariableDef {

@@ -1,6 +1,7 @@
 #![allow(unused)]
 pub mod definition {
     use crate::lexer::tokens::types::{TokenLiteral, TokenOperator};
+
     #[derive(Debug, Clone)]
     pub enum Expression {
         Literal(TokenLiteral),
