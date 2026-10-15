@@ -1,4 +1,3 @@
-
 /*
  * Every function to return a result, so unit() if no like result or return value.
  * But will add a work around if someone doesn't want to =>  must be simple.
