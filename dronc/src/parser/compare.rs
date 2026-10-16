@@ -10,12 +10,12 @@ pub mod definition {
     }
 }
 pub mod parse_compare {
+    use crate::errors::combined::DronError;
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenCompare};
     use crate::parser::{
         compare::definition::Comparison, par_err::parser_error::ParserError,
         statements::definition::Value, stmt::Parser,
     };
-    use crate::errors::combined::DronError;
-    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenCompare};
     impl<'a> Parser<'a> {
         pub fn comparison_parse(&mut self) -> Result<Comparison, DronError> {
             let left = self.get_value()?;

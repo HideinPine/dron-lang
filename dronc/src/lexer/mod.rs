@@ -54,6 +54,7 @@ pub mod eval {
     }
     pub fn comp_type(ty: &str) -> Option<LiteralTypes> {
         match ty {
+            "bool" => Some(LiteralTypes::Bool),
             "u8" => Some(LiteralTypes::Int(IntType::U8)),
             "u16" => Some(LiteralTypes::Int(IntType::U16)),
             "u32" => Some(LiteralTypes::Int(IntType::U32)),

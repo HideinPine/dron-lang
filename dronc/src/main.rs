@@ -1,6 +1,7 @@
 #![allow(unused)]
+use crate::errors::combined::DronError;
 use crate::lexer::tokenizer;
-use crate::parser::{par_err, stmt::get_tokens};
+use crate::parser::{par_err, stmt::analyse};
 use owo_colors::OwoColorize;
 use std::{env, fs, time::Instant};
 mod errors;
@@ -31,7 +32,7 @@ fn to_char(file: String) -> Vec<char> {
     file.chars().collect()
 }
 
-fn main() {
+fn main() -> Result<(), DronError> {
     let start = Instant::now();
     let file = get_file();
     //println!("{}", file);
@@ -40,11 +41,20 @@ fn main() {
         Ok(t) => t,
         Err(e) => {
             println!("Error: {:?}", e);
-            return;
+            return Ok(());
         }
     };
-    let value = get_tokens(tokenized);
+
+    match analyse(tokenized) {
+        Ok(()) => {
+            return Ok(());
+        }
+        Err(e) => {
+            eprintln!("Error: {e}");
+            std::process::exit(1)
+        }
+    }
     let end = Instant::now();
-    println!("{:?}", value);
     println!("\t{} in {:?}", "Finished".bold().green(), end - start);
+    Ok(())
 }

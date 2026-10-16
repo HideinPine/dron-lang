@@ -49,6 +49,7 @@ pub mod definition {
     }
 }
 pub mod parse_keywords {
+    use crate::errors::combined::DronError;
     use crate::lexer::tokens::tokentypes::{
         Arguments, LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator, TokenState,
     };
@@ -57,7 +58,6 @@ pub mod parse_keywords {
         par_err::parser_error::ParserError,
         stmt::Parser,
     };
-    use crate::errors::combined::DronError;
     impl<'a> Parser<'a> {
         pub fn keyword_parse(
             &mut self,
@@ -85,7 +85,11 @@ pub mod parse_keywords {
             self.expect(LexerCartegories::Keyword(TokenKeyword::Function))?;
             let fname = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.0.clone(),
-                Some(tokens) => return Err(DronError::Parser(ParserError::UnexpectedToken(tokens.clone()))),
+                Some(tokens) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        tokens.clone(),
+                    )));
+                }
                 None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftBrace))?;
@@ -95,7 +99,11 @@ pub mod parse_keywords {
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
                     Some(LexerCartegories::Identifier(t)) => t.clone(),
-                    Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                    Some(token) => {
+                        return Err(DronError::Parser(ParserError::UnexpectedToken(
+                            token.clone(),
+                        )));
+                    }
                     None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
                 };
                 args.push(Arguments { name, arg_type });
@@ -146,7 +154,11 @@ pub mod parse_keywords {
             self.expect(LexerCartegories::Keyword(TokenKeyword::Struct))?;
             let name = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.clone(),
-                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                Some(token) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        token.clone(),
+                    )));
+                }
                 None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
@@ -156,7 +168,11 @@ pub mod parse_keywords {
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
                     Some(LexerCartegories::Identifier(t)) => t.clone(),
-                    Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                    Some(token) => {
+                        return Err(DronError::Parser(ParserError::UnexpectedToken(
+                            token.clone(),
+                        )));
+                    }
                     None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
                 };
                 fields.push(Arguments { name, arg_type });
@@ -171,7 +187,11 @@ pub mod parse_keywords {
             self.expect(LexerCartegories::Keyword(TokenKeyword::Enum))?;
             let name = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.clone(),
-                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                Some(token) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        token.clone(),
+                    )));
+                }
                 None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;

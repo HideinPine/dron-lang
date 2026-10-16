@@ -162,13 +162,13 @@ pub mod stmt {
             Ok(contains)
         }
     }
-    pub fn get_tokens(tokens: Vec<LexerCartegories>) -> Result<(), DronError> {
+    pub fn analyse(tokens: Vec<LexerCartegories>) -> Result<(), DronError> {
         let mut parser = Parser {
             tokens: &tokens,
             pos: 0,
         };
         println!("\n{:?}", tokens.blue().bold());
-        let smth = parser.parse_program()?; 
+        let smth = parser.parse_program()?;
         semantic::initialize::init(smth)?;
         // println!("{:?}", sem);
         Ok(())

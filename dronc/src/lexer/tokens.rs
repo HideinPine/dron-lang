@@ -109,6 +109,8 @@ pub mod literal_types {
     pub enum LiteralTypes {
         Int(IntType),
         Float(FloatType),
+        Bool,
+        // Bool(BoolType),
     }
     #[derive(PartialEq, Debug, Clone)]
     pub enum IntType {

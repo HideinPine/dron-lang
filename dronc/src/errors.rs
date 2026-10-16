@@ -33,12 +33,12 @@ pub mod combined {
         }
     }
     impl std::fmt::Display for DronError {
-        fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             match self {
-                DronError::Semantic(err) => write!(f, "Semantic analysis error: {:?}", err),
-                DronError::Lexer(err) => write!(f, "Lexer Error: {:?}", err),
-                DronError::Parser(err) => write!(f, "Parser Error: {:?}", err),
-                DronError::Keyword(err) => write!(f, "Keyword error: {:?}", err),
+                DronError::Semantic(err) => write!(f, "Semantic analysis error: {}", err),
+                DronError::Lexer(err) => write!(f, "Lexer Error: {}", err),
+                DronError::Parser(err) => write!(f, "Parser Error: {}", err),
+                DronError::Keyword(err) => write!(f, "Keyword error: {}", err),
             }
         }
     }

@@ -7,15 +7,11 @@ pub mod types {
     use crate::semantic::sem_err::type_error::SemanticErrors;
 
     pub fn type_look_up(var: VariableDef) -> Result<(), SemanticErrors> {
-        match var.kind {
-            LiteralTypes::Int(_) => match var.value {
-                Value::Literal(TokenLiteral::Integer(_)) => Ok(()),
-                _ => Err(SemanticErrors::TypeMismatch),
-            },
-            LiteralTypes::Float(_) => match var.value {
-                Value::Literal(TokenLiteral::Float(_)) => Ok(()),
-                _ => Err(SemanticErrors::TypeMismatch),
-            },
+        match (&var.kind, &var.value) {
+            (LiteralTypes::Int(_), Value::Literal(TokenLiteral::Integer(_))) => Ok(()),
+            (LiteralTypes::Float(_), Value::Literal(TokenLiteral::Float(_))) => Ok(()),
+            (LiteralTypes::Bool, Value::Literal(TokenLiteral::Boolean(_))) => Ok(()),
+            (_, _) => Err(SemanticErrors::TypeMismatch),
         }
     }
 }

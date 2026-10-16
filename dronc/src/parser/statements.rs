@@ -64,6 +64,7 @@ pub mod definition {
 }
 
 pub mod parse_state {
+    use crate::errors::combined::DronError;
     use crate::lexer::tokens::tokentypes::{
         LexerCartegories, TokenAssign, TokenSeparator, TokenState,
     };
@@ -76,7 +77,6 @@ pub mod parse_state {
         },
         stmt::Parser,
     };
-    use crate::errors::combined::DronError;
     impl<'a> Parser<'a> {
         pub fn statement_parse(
             &mut self,
@@ -127,7 +127,11 @@ pub mod parse_state {
                     }
                     Err(e) => return Err(DronError::Parser(e)),
                 },
-                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                Some(token) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        token.clone(),
+                    )));
+                }
                 // TODO => Return above stuff not anything else..
                 None => {
                     return Ok(RetDef { id: None });
@@ -237,13 +241,21 @@ pub mod parse_state {
             self.expect(LexerCartegories::Statement(TokenState::VariableDeclaration))?;
             let identifier = match self.temporal() {
                 Some(LexerCartegories::Identifier(n)) => n.clone(),
-                Some(tokens) => return Err(DronError::Parser(ParserError::UnexpectedToken(tokens.clone()))),
+                Some(tokens) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        tokens.clone(),
+                    )));
+                }
                 None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
             let kind = match self.temporal() {
                 Some(LexerCartegories::LitType(ty)) => ty.clone(),
-                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                Some(token) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        token.clone(),
+                    )));
+                }
                 None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Assign(TokenAssign::Equal))?;
