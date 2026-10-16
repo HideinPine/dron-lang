@@ -5,6 +5,7 @@ use owo_colors::OwoColorize;
 use std::{env, fs, time::Instant};
 mod lexer;
 mod parser;
+mod semantic;
 
 fn get_file() -> String {
     let args: Vec<String> = env::args().collect();

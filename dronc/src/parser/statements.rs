@@ -40,7 +40,11 @@ pub mod definition {
     pub struct ElseStuff {
         pub contains: Vec<Contains>,
     }
-  
+    #[derive(Debug)]
+    pub struct WhileStuff {
+        pub comparison: Comparison,
+        pub contains: Vec<StateStuff>,
+    }
     #[derive(Debug)]
     pub struct LoopStuff {
         pub contains: Vec<StateStuff>,
@@ -53,6 +57,7 @@ pub mod definition {
         ElseIf(ElseIfStuff),
         Else(ElseStuff),
         Loop(LoopStuff),
+        While(WhileStuff),
         Cont(()),
         Break(()),
     }
@@ -66,7 +71,8 @@ pub mod parse_state {
         errors::parser_error::ParserError,
         expressions::definition::Expression,
         statements::definition::{
-            Contains, ElseIfStuff, ElseStuff, IfStuff, RetDef, StateStuff, Value, VariableDef, LoopStuff,
+            Contains, ElseIfStuff, ElseStuff, IfStuff, LoopStuff, RetDef, StateStuff, Value,
+            VariableDef, WhileStuff,
         },
         stmt::Parser,
     };
@@ -90,6 +96,7 @@ pub mod parse_state {
                 TokenState::ElseIf => statestuffvec.push(StateStuff::ElseIf(self.parse_elseif()?)),
                 TokenState::Else => statestuffvec.push(StateStuff::Else(self.parse_else()?)),
                 TokenState::Loop => statestuffvec.push(StateStuff::Loop(self.parse_loop()?)),
+                TokenState::While => statestuffvec.push(StateStuff::While(self.parse_while()?)),
                 _ => return Err(ParserError::NotYetImplemented),
             }
             Ok(statestuffvec)
@@ -113,6 +120,7 @@ pub mod parse_state {
                 }
                 Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
                     Ok(Expression::Literal(l)) => Value::Literal(l),
+                    Ok(Expression::Identifier(l)) => Value::Identifier(l),
                     Ok(Expression::Operation(smth, smth1)) => {
                         Value::Express(Expression::Operation(smth, smth1))
                     }
@@ -121,9 +129,7 @@ pub mod parse_state {
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 // TODO => Return above stuff not anything else..
                 None => {
-                    return Ok(RetDef {
-                        id: None,
-                    });
+                    return Ok(RetDef { id: None });
                 }
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
@@ -206,55 +212,25 @@ pub mod parse_state {
             }
             let contains = stack.pop().unwrap();
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
-            Ok(ElseStuff { contains, })
+            Ok(ElseStuff { contains })
         }
         pub fn parse_loop(&mut self) -> Result<LoopStuff, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::Loop))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
-            let mut stack: Vec<Vec<StateStuff>> = vec![Vec::new()];
-            while let Some(token) = self.peek().cloned() {
-                match token {
-                    LexerCartegories::Separator(TokenSeparator::RightCurl) => break,
-                    LexerCartegories::Statement(TokenState::VariableDeclaration) => {
-                        let value = self.parse_variable()?;
-                        stack.last_mut().unwrap().push(StateStuff::Var(value));
-                    }
-                    LexerCartegories::Statement(TokenState::Break) => {
-                        let _value = self.parse_break()?;       
-                        stack.last_mut().unwrap().push(StateStuff::Break(()));
-                    }
-                    LexerCartegories::Statement(TokenState::Continue) => {
-                        let _value = self.parse_cont()?;
-                        stack.last_mut().unwrap().push(StateStuff::Cont(()));
-                }
-                    LexerCartegories::Statement(TokenState::Return) => {
-                        let value = self.parse_ret()?;
-                        stack.last_mut().unwrap().push(StateStuff::Ret(value));
-                    }
-                    LexerCartegories::Statement(TokenState::Loop) => {
-                        let value = self.parse_loop()?;
-                        stack.last_mut().unwrap().push(StateStuff::Loop(value));
-                    }
-                    LexerCartegories::Statement(TokenState::If) => {
-                        let value = self.parse_if()?;
-                        stack.last_mut().unwrap().push(StateStuff::If(value));
-                    }
-                    LexerCartegories::Statement(TokenState::ElseIf) => {
-                        let value = self.parse_elseif()?;
-                        stack.last_mut().unwrap().push(StateStuff::ElseIf(value));
-                    }
-                    LexerCartegories::Statement(TokenState::Else) => {
-                        let value = self.parse_else()?;
-                        stack.last_mut().unwrap().push(StateStuff::Else(value));
-                    }
-                    
-                    other => return Err(ParserError::UnexpectedToken(other)),
-                    
-                }
-            }
-            let contains = stack.pop().unwrap();
+            let contains = self.get_loop()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
-            Ok(LoopStuff { contains, })
+            Ok(LoopStuff { contains })
+        }
+        pub fn parse_while(&mut self) -> Result<WhileStuff, ParserError> {
+            self.expect(LexerCartegories::Statement(TokenState::While))?;
+            let comparison = self.comparison_parse()?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
+            let contains = self.get_loop()?;
+            self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
+            Ok(WhileStuff {
+                comparison,
+                contains,
+            })
         }
         pub fn parse_variable(&mut self) -> Result<VariableDef, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::VariableDeclaration))?;

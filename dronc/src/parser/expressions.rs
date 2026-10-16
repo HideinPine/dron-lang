@@ -1,9 +1,10 @@
 #![allow(unused)]
 pub mod definition {
-    use crate::lexer::tokens::tokentypes::{TokenLiteral, TokenOperator};
+    use crate::lexer::tokens::tokentypes::{TokenIdentifier, TokenLiteral, TokenOperator};
 
     #[derive(Debug, Clone)]
     pub enum Expression {
+        Identifier(TokenIdentifier),
         Literal(TokenLiteral),
         Operation(TokenOperator, Vec<Expression>),
     }
@@ -19,6 +20,7 @@ pub mod parse_express {
         pub fn parse_expression(&mut self, min_precedence: u8) -> Result<Expression, ParserError> {
             let mut left = match self.temporal() {
                 Some(LexerCartegories::Literal(smth)) => Expression::Literal(smth.clone()),
+                Some(LexerCartegories::Identifier(smth)) => Expression::Identifier(smth.clone()),
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 None => return Err(ParserError::UnexpectedEOF),
             };

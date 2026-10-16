@@ -7,7 +7,7 @@ pub mod keyword;
 pub mod statements;
 
 pub mod stmt {
-    use crate::lexer::tokens::tokentypes::LexerCartegories;
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenSeparator, TokenState};
     use crate::parser::{
         block::definition::BlockStuff,
         errors::parser_error::{InvalidTokenError, ParserError},
@@ -90,6 +90,7 @@ pub mod stmt {
                         // self.pos += 1;
                         Ok(Value::Literal(l))
                     }
+                    Ok(Expression::Identifier(smth)) => Ok(Value::Identifier(smth)),
                     Ok(Expression::Operation(smth, smth1)) => {
                         Ok(Value::Express(Expression::Operation(smth, smth1)))
                     }
@@ -99,9 +100,57 @@ pub mod stmt {
                     self.pos += 1;
                     Ok(Value::Identifier(id.clone()))
                 }
+                #[allow(clippy::needless_return)]
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
                 None => Err(ParserError::UnexpectedEOF),
             }
+        }
+        pub fn get_loop(&mut self) -> Result<Vec<StateStuff>, ParserError> {
+            let mut stack: Vec<Vec<StateStuff>> = vec![Vec::new()];
+            while let Some(token) = self.peek().cloned() {
+                match token {
+                    LexerCartegories::Separator(TokenSeparator::RightCurl) => break,
+                    LexerCartegories::Statement(TokenState::VariableDeclaration) => {
+                        let value = self.parse_variable()?;
+                        stack.last_mut().unwrap().push(StateStuff::Var(value));
+                    }
+                    LexerCartegories::Statement(TokenState::Break) => {
+                        self.parse_break()?;
+                        stack.last_mut().unwrap().push(StateStuff::Break(()));
+                    }
+                    LexerCartegories::Statement(TokenState::Continue) => {
+                        self.parse_cont()?;
+                        stack.last_mut().unwrap().push(StateStuff::Cont(()));
+                    }
+                    LexerCartegories::Statement(TokenState::Return) => {
+                        let value = self.parse_ret()?;
+                        stack.last_mut().unwrap().push(StateStuff::Ret(value));
+                    }
+                    LexerCartegories::Statement(TokenState::Loop) => {
+                        let value = self.parse_loop()?;
+                        stack.last_mut().unwrap().push(StateStuff::Loop(value));
+                    }
+                    LexerCartegories::Statement(TokenState::If) => {
+                        let value = self.parse_if()?;
+                        stack.last_mut().unwrap().push(StateStuff::If(value));
+                    }
+                    LexerCartegories::Statement(TokenState::ElseIf) => {
+                        let value = self.parse_elseif()?;
+                        stack.last_mut().unwrap().push(StateStuff::ElseIf(value));
+                    }
+                    LexerCartegories::Statement(TokenState::Else) => {
+                        let value = self.parse_else()?;
+                        stack.last_mut().unwrap().push(StateStuff::Else(value));
+                    }
+                    LexerCartegories::Statement(TokenState::While) => {
+                        let value = self.parse_while()?;
+                        stack.last_mut().unwrap().push(StateStuff::While(value));
+                    }
+                    other => return Err(ParserError::UnexpectedToken(other)),
+                }
+            }
+            let contains = stack.pop().unwrap();
+            Ok(contains)
         }
     }
     pub fn get_tokens(tokens: Vec<LexerCartegories>) {
@@ -110,8 +159,13 @@ pub mod stmt {
             pos: 0,
         };
         match parser.parse_program() {
-            Ok(smth) => println!("\n {} {:?}", "THE AST:".blue().bold() ,smth.bright_green().bold()),
-            Err(er) => println!("{} {:?}","Error:".red().bold(), er.red().bold()),
+            // Ok(_) =>
+            Ok(smth) => println!(
+                "\n {} {:?}",
+                "THE AST:".blue().bold(),
+                smth.bright_green().bold()
+            ),
+            Err(er) => println!("{} {:?}", "Error:".red().bold(), er.red().bold()),
         }
         println!("\n{:?}", tokens.blue().bold());
         //println!("Total lines are: {newline_counter}\n");
