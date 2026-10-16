@@ -123,6 +123,8 @@ pub mod eval {
             "break" => Some(TokenState::Break),
             "continue" => Some(TokenState::Continue),
             "return" => Some(TokenState::Return),
+            "loop" => Some(TokenState::Loop),
+            "while" => Some(TokenState::While),
             _ => None,
         }
     }

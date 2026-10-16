@@ -92,6 +92,7 @@ pub mod tokentypes {
         ElseIf,
         While,
         For,
+        Loop,
         Return,
         Continue,
         Break,

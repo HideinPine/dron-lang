@@ -110,8 +110,8 @@ pub mod stmt {
             pos: 0,
         };
         match parser.parse_program() {
-            Ok(smth) => println!("\n{:?}", smth.bright_green().bold()),
-            Err(er) => println!("{:?}", er),
+            Ok(smth) => println!("\n {} {:?}", "THE AST:".blue().bold() ,smth.bright_green().bold()),
+            Err(er) => println!("{} {:?}","Error:".red().bold(), er.red().bold()),
         }
         println!("\n{:?}", tokens.blue().bold());
         //println!("Total lines are: {newline_counter}\n");
