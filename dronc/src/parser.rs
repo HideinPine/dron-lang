@@ -93,7 +93,7 @@ pub mod stmt {
                     Ok(Expression::Operation(smth, smth1)) => {
                         Ok(Value::Express(Expression::Operation(smth, smth1)))
                     }
-                    Err(_) => todo!(),
+                    Err(e) => Err(e),
                 },
                 Some(LexerCartegories::Identifier(id)) => {
                     self.pos += 1;
