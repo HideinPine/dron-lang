@@ -1,34 +1,35 @@
-//#![allow(unused)]
+// #![allow(unused)]
 pub mod block;
 pub mod compare;
-pub mod errors;
 pub mod expressions;
 pub mod keyword;
+pub mod par_err;
 pub mod statements;
 
 pub mod stmt {
+    use crate::errors::combined::DronError;
     use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenSeparator, TokenState};
     use crate::parser::{
         block::definition::BlockStuff,
-        errors::parser_error::{InvalidTokenError, ParserError},
         expressions::definition::Expression,
         keyword::definition::KeywordStuff,
+        par_err::parser_error::{InvalidTokenError, ParserError},
         statements::definition::{StateStuff, Value},
     };
+    use crate::semantic;
     use owo_colors::OwoColorize;
-    #[allow(dead_code)]
     #[derive(Debug)]
     pub struct AbstractSyntaxTree {
-        blocks: Vec<BlockStuff>,
-        keywords: Vec<KeywordStuff>,
-        states: Vec<StateStuff>,
+        pub blocks: Vec<BlockStuff>,
+        pub keywords: Vec<KeywordStuff>,
+        pub states: Vec<StateStuff>,
     }
     pub struct Parser<'a> {
         pub tokens: &'a [LexerCartegories],
         pub pos: usize,
     }
     impl<'a> Parser<'a> {
-        pub fn parse_program(&mut self) -> Result<AbstractSyntaxTree, ParserError> {
+        pub fn parse_program(&mut self) -> Result<AbstractSyntaxTree, DronError> {
             let mut keywords_vec: Vec<KeywordStuff> = Vec::new();
             let mut blocks_vec: Vec<BlockStuff> = Vec::new();
             let mut state_vec: Vec<StateStuff> = Vec::new();
@@ -51,7 +52,9 @@ pub mod stmt {
                         state_vec.extend(item);
                     }
                     other => {
-                        return Err(ParserError::UnexpectedToken(other.clone()));
+                        return Err(DronError::Parser(ParserError::UnexpectedToken(
+                            other.clone(),
+                        )));
                     }
                 };
             }
@@ -70,20 +73,22 @@ pub mod stmt {
         pub fn peek(&self) -> Option<&LexerCartegories> {
             self.tokens.get(self.pos)
         }
-        pub fn expect(&mut self, expected: LexerCartegories) -> Result<(), ParserError> {
+        pub fn expect(&mut self, expected: LexerCartegories) -> Result<(), DronError> {
             match self.peek() {
                 Some(val) if *val == expected => {
                     self.pos += 1;
                     Ok(())
                 }
-                Some(found) => Err(ParserError::InvalidToken(InvalidTokenError {
-                    expected,
-                    found: found.clone(),
-                })),
-                None => Err(ParserError::UnexpectedEOF),
+                Some(found) => Err(DronError::Parser(ParserError::InvalidToken(
+                    InvalidTokenError {
+                        expected,
+                        found: found.clone(),
+                    },
+                ))),
+                None => Err(DronError::Parser(ParserError::UnexpectedEOF)),
             }
         }
-        pub fn get_value(&mut self) -> Result<Value, ParserError> {
+        pub fn get_value(&mut self) -> Result<Value, DronError> {
             match self.peek().cloned() {
                 Some(LexerCartegories::Literal(_)) => match self.parse_expression(0) {
                     Ok(Expression::Literal(l)) => {
@@ -94,18 +99,22 @@ pub mod stmt {
                     Ok(Expression::Operation(smth, smth1)) => {
                         Ok(Value::Express(Expression::Operation(smth, smth1)))
                     }
-                    Err(e) => Err(e),
+                    Err(e) => Err(DronError::Parser(e)),
                 },
                 Some(LexerCartegories::Identifier(id)) => {
                     self.pos += 1;
                     Ok(Value::Identifier(id.clone()))
                 }
                 #[allow(clippy::needless_return)]
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => Err(ParserError::UnexpectedEOF),
+                Some(token) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        token.clone(),
+                    )));
+                }
+                None => Err(DronError::Parser(ParserError::UnexpectedEOF)),
             }
         }
-        pub fn get_loop(&mut self) -> Result<Vec<StateStuff>, ParserError> {
+        pub fn get_loop(&mut self) -> Result<Vec<StateStuff>, DronError> {
             let mut stack: Vec<Vec<StateStuff>> = vec![Vec::new()];
             while let Some(token) = self.peek().cloned() {
                 match token {
@@ -146,29 +155,22 @@ pub mod stmt {
                         let value = self.parse_while()?;
                         stack.last_mut().unwrap().push(StateStuff::While(value));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other)),
+                    other => return Err(DronError::Parser(ParserError::UnexpectedToken(other))),
                 }
             }
             let contains = stack.pop().unwrap();
             Ok(contains)
         }
     }
-    pub fn get_tokens(tokens: Vec<LexerCartegories>) {
+    pub fn get_tokens(tokens: Vec<LexerCartegories>) -> Result<(), DronError> {
         let mut parser = Parser {
             tokens: &tokens,
             pos: 0,
         };
-        match parser.parse_program() {
-            // Ok(_) =>
-            Ok(smth) => println!(
-                "\n {} {:?}",
-                "THE AST:".blue().bold(),
-                smth.bright_green().bold()
-            ),
-            Err(er) => println!("{} {:?}", "Error:".red().bold(), er.red().bold()),
-        }
         println!("\n{:?}", tokens.blue().bold());
-        //println!("Total lines are: {newline_counter}\n");
-        //try_val(&tokens);
+        let smth = parser.parse_program()?; 
+        semantic::initialize::init(smth)?;
+        // println!("{:?}", sem);
+        Ok(())
     }
 }

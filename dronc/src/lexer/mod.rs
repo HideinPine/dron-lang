@@ -139,7 +139,7 @@ pub mod tokenizer {
         flush::{flush_int, flush_keyword, flush_oper},
         tokens::tokentypes::LexerCartegories::{self, EndOfFile},
     };
-    use crate::parser::errors::lexer_error::LexerError;
+    use crate::parser::par_err::lexer_error::LexerError;
     pub fn tokenize(chars: Vec<char>) -> Result<Vec<LexerCartegories>, LexerError> {
         let mut keyword_value: Vec<char> = Vec::new();
         let mut oper_val: Vec<char> = Vec::new();
@@ -207,7 +207,6 @@ pub mod tokenizer {
 }
 pub mod flush {
     use crate::{
-        errors::lexer_error::LexerError,
         lexer::{
             eval::{
                 comp_block, comp_key, comp_literal, comp_state, comp_type, is_block, is_keyword,
@@ -215,6 +214,7 @@ pub mod flush {
             },
             tokens::tokentypes::{LexerCartegories, TokenIdentifier, TokenLiteral},
         },
+        parser::par_err::lexer_error::LexerError,
     };
     pub fn flush_keyword(keyword: &mut Vec<char>, tokens: &mut Vec<LexerCartegories>) {
         if keyword.is_empty() {

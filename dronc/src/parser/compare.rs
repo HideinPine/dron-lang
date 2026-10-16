@@ -11,13 +11,13 @@ pub mod definition {
 }
 pub mod parse_compare {
     use crate::parser::{
-        compare::definition::Comparison, errors::parser_error::ParserError,
+        compare::definition::Comparison, par_err::parser_error::ParserError,
         statements::definition::Value, stmt::Parser,
     };
-
+    use crate::errors::combined::DronError;
     use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenCompare};
     impl<'a> Parser<'a> {
-        pub fn comparison_parse(&mut self) -> Result<Comparison, ParserError> {
+        pub fn comparison_parse(&mut self) -> Result<Comparison, DronError> {
             let left = self.get_value()?;
             match self.peek().cloned() {
                 Some(LexerCartegories::Compare(token)) => {
@@ -25,8 +25,8 @@ pub mod parse_compare {
                     let right = self.get_value()?;
                     Ok(Comparison { left, token, right })
                 }
-                Some(other) => Err(ParserError::UnexpectedToken(other)),
-                None => Err(ParserError::UnexpectedEOF),
+                Some(other) => Err(DronError::Parser(ParserError::UnexpectedToken(other))),
+                None => Err(DronError::Parser(ParserError::UnexpectedEOF)),
             }
         }
     }

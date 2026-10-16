@@ -13,7 +13,7 @@ pub mod definition {
 pub mod parse_express {
     use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenLiteral, TokenOperator};
     use crate::parser::{
-        errors::parser_error::ParserError, expressions::definition::Expression,
+        expressions::definition::Expression, par_err::parser_error::ParserError,
         statements::definition::Value, stmt::Parser,
     };
     impl<'a> Parser<'a> {

@@ -1,8 +1,9 @@
 #![allow(unused)]
 use crate::lexer::tokenizer;
-use crate::parser::{errors, stmt::get_tokens};
+use crate::parser::{par_err, stmt::get_tokens};
 use owo_colors::OwoColorize;
 use std::{env, fs, time::Instant};
+mod errors;
 mod lexer;
 mod parser;
 mod semantic;
@@ -42,7 +43,8 @@ fn main() {
             return;
         }
     };
-    get_tokens(tokenized);
+    let value = get_tokens(tokenized);
     let end = Instant::now();
+    println!("{:?}", value);
     println!("\t{} in {:?}", "Finished".bold().green(), end - start);
 }

@@ -1,5 +1,5 @@
 pub mod definition {
-    use crate::lexer::tokens::tokentypes::LexerCartegories;
+    use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenIdentifier};
     // TokenBlock + TokenSeparator(OpenCurl) + ... + TokenSeparator(CloseCurl)
     #[derive(Debug)]
     pub struct GhostDef {
@@ -11,7 +11,7 @@ pub mod definition {
     }
     #[derive(Debug)]
     pub struct EphReg {
-        pub name: Option<String>,
+        pub name: Option<TokenIdentifier>,
         pub content: Option<Vec<LexerCartegories>>,
     }
 
@@ -24,14 +24,15 @@ pub mod definition {
 }
 
 pub mod parse_blocks {
+    use crate::errors::combined::DronError;
     use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenBlock, TokenSeparator};
     use crate::parser::{
         block::definition::{BlockStuff, EphReg, GhostDef, UnsafeDef},
-        errors::parser_error::ParserError,
+        par_err::parser_error::ParserError,
         stmt::Parser,
     };
     impl<'a> Parser<'a> {
-        pub fn block_parse(&mut self, block: &TokenBlock) -> Result<Vec<BlockStuff>, ParserError> {
+        pub fn block_parse(&mut self, block: &TokenBlock) -> Result<Vec<BlockStuff>, DronError> {
             //let mut funcvec: Vec<FunDef> = Vec::new();
             let mut blockstuffvec: Vec<BlockStuff> = Vec::new();
             // if let Some(LexerCartegories::Block(TokenBlock::Ghost)) = self.peek() {
@@ -49,7 +50,7 @@ pub mod parse_blocks {
             }
             Ok(blockstuffvec)
         }
-        fn parse_ghost(&mut self) -> Result<GhostDef, ParserError> {
+        fn parse_ghost(&mut self) -> Result<GhostDef, DronError> {
             self.expect(LexerCartegories::Block(TokenBlock::Ghost))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut body: Vec<LexerCartegories> = Vec::new();
@@ -68,7 +69,7 @@ pub mod parse_blocks {
                 content: Some(body),
             })
         }
-        fn parse_unsafe(&mut self) -> Result<UnsafeDef, ParserError> {
+        fn parse_unsafe(&mut self) -> Result<UnsafeDef, DronError> {
             self.expect(LexerCartegories::Block(TokenBlock::Unsafe))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut body: Vec<LexerCartegories> = Vec::new();
@@ -87,12 +88,16 @@ pub mod parse_blocks {
                 content: Some(body),
             })
         }
-        fn parse_ephemeral(&mut self) -> Result<EphReg, ParserError> {
+        fn parse_ephemeral(&mut self) -> Result<EphReg, DronError> {
             self.expect(LexerCartegories::Block(TokenBlock::EphemeralRegion))?;
             let name = match self.temporal() {
-                Some(LexerCartegories::Identifier(n)) => n.0.clone(),
-                Some(tokens) => return Err(ParserError::UnexpectedToken(tokens.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(LexerCartegories::Identifier(n)) => n.clone(),
+                Some(tokens) => {
+                    return Err(DronError::Parser(ParserError::UnexpectedToken(
+                        tokens.clone(),
+                    )));
+                }
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut body: Vec<LexerCartegories> = Vec::new();

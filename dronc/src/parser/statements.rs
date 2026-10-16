@@ -68,19 +68,20 @@ pub mod parse_state {
         LexerCartegories, TokenAssign, TokenSeparator, TokenState,
     };
     use crate::parser::{
-        errors::parser_error::ParserError,
         expressions::definition::Expression,
+        par_err::parser_error::ParserError,
         statements::definition::{
             Contains, ElseIfStuff, ElseStuff, IfStuff, LoopStuff, RetDef, StateStuff, Value,
             VariableDef, WhileStuff,
         },
         stmt::Parser,
     };
+    use crate::errors::combined::DronError;
     impl<'a> Parser<'a> {
         pub fn statement_parse(
             &mut self,
             token: &TokenState,
-        ) -> Result<Vec<StateStuff>, ParserError> {
+        ) -> Result<Vec<StateStuff>, DronError> {
             //let mut funcvec: Vec<FunDef> = Vec::new();
             let mut statestuffvec: Vec<StateStuff> = Vec::new();
             // if let Some(LexerCartegories::Keyword(TokenKeyword::Struct)) = self.peek() {
@@ -97,21 +98,21 @@ pub mod parse_state {
                 TokenState::Else => statestuffvec.push(StateStuff::Else(self.parse_else()?)),
                 TokenState::Loop => statestuffvec.push(StateStuff::Loop(self.parse_loop()?)),
                 TokenState::While => statestuffvec.push(StateStuff::While(self.parse_while()?)),
-                _ => return Err(ParserError::NotYetImplemented),
+                _ => return Err(DronError::Parser(ParserError::NotYetImplemented)),
             }
             Ok(statestuffvec)
         }
-        pub fn parse_break(&mut self) -> Result<(), ParserError> {
+        pub fn parse_break(&mut self) -> Result<(), DronError> {
             self.expect(LexerCartegories::Statement(TokenState::Break))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(())
         }
-        pub fn parse_cont(&mut self) -> Result<(), ParserError> {
+        pub fn parse_cont(&mut self) -> Result<(), DronError> {
             self.expect(LexerCartegories::Statement(TokenState::Continue))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::SemiColon))?;
             Ok(())
         }
-        pub fn parse_ret(&mut self) -> Result<RetDef, ParserError> {
+        pub fn parse_ret(&mut self) -> Result<RetDef, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::Return))?;
             let identifier = match self.peek().cloned() {
                 Some(LexerCartegories::Identifier(n)) => {
@@ -124,9 +125,9 @@ pub mod parse_state {
                     Ok(Expression::Operation(smth, smth1)) => {
                         Value::Express(Expression::Operation(smth, smth1))
                     }
-                    Err(e) => return Err(e),
+                    Err(e) => return Err(DronError::Parser(e)),
                 },
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
+                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
                 // TODO => Return above stuff not anything else..
                 None => {
                     return Ok(RetDef { id: None });
@@ -137,7 +138,7 @@ pub mod parse_state {
                 id: Some(identifier),
             })
         }
-        pub fn parse_elseif(&mut self) -> Result<ElseIfStuff, ParserError> {
+        pub fn parse_elseif(&mut self) -> Result<ElseIfStuff, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::ElseIf))?;
             let expression = self.comparison_parse()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
@@ -154,7 +155,7 @@ pub mod parse_state {
                         let value = self.parse_ret()?;
                         stack.last_mut().unwrap().push(Contains::Return(value));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other)),
+                    other => return Err(DronError::Parser(ParserError::UnexpectedToken(other))),
                 }
             }
             let contains = stack.pop().unwrap();
@@ -164,7 +165,7 @@ pub mod parse_state {
                 contains,
             })
         }
-        pub fn parse_if(&mut self) -> Result<IfStuff, ParserError> {
+        pub fn parse_if(&mut self) -> Result<IfStuff, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::If))?;
             let expression = self.comparison_parse()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
@@ -181,7 +182,7 @@ pub mod parse_state {
                         let value = self.parse_ret()?;
                         stack.last_mut().unwrap().push(Contains::Return(value));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other)),
+                    other => return Err(DronError::Parser(ParserError::UnexpectedToken(other))),
                 }
             }
             let contains = stack.pop().unwrap();
@@ -191,7 +192,7 @@ pub mod parse_state {
                 contains,
             })
         }
-        pub fn parse_else(&mut self) -> Result<ElseStuff, ParserError> {
+        pub fn parse_else(&mut self) -> Result<ElseStuff, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::Else))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut stack: Vec<Vec<Contains>> = vec![Vec::new()];
@@ -207,21 +208,21 @@ pub mod parse_state {
                         let value = self.parse_ret()?;
                         stack.last_mut().unwrap().push(Contains::Return(value));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other)),
+                    other => return Err(DronError::Parser(ParserError::UnexpectedToken(other))),
                 }
             }
             let contains = stack.pop().unwrap();
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(ElseStuff { contains })
         }
-        pub fn parse_loop(&mut self) -> Result<LoopStuff, ParserError> {
+        pub fn parse_loop(&mut self) -> Result<LoopStuff, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::Loop))?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let contains = self.get_loop()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(LoopStuff { contains })
         }
-        pub fn parse_while(&mut self) -> Result<WhileStuff, ParserError> {
+        pub fn parse_while(&mut self) -> Result<WhileStuff, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::While))?;
             let comparison = self.comparison_parse()?;
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
@@ -232,18 +233,18 @@ pub mod parse_state {
                 contains,
             })
         }
-        pub fn parse_variable(&mut self) -> Result<VariableDef, ParserError> {
+        pub fn parse_variable(&mut self) -> Result<VariableDef, DronError> {
             self.expect(LexerCartegories::Statement(TokenState::VariableDeclaration))?;
             let identifier = match self.temporal() {
                 Some(LexerCartegories::Identifier(n)) => n.clone(),
-                Some(tokens) => return Err(ParserError::UnexpectedToken(tokens.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(tokens) => return Err(DronError::Parser(ParserError::UnexpectedToken(tokens.clone()))),
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
             let kind = match self.temporal() {
                 Some(LexerCartegories::LitType(ty)) => ty.clone(),
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Assign(TokenAssign::Equal))?;
             // self.pos += 1;

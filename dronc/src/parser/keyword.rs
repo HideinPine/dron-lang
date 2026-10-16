@@ -53,15 +53,16 @@ pub mod parse_keywords {
         Arguments, LexerCartegories, TokenIdentifier, TokenKeyword, TokenSeparator, TokenState,
     };
     use crate::parser::{
-        errors::parser_error::ParserError,
         keyword::definition::{Block, Body, EnumDef, FunDef, KeywordStuff, StructDef},
+        par_err::parser_error::ParserError,
         stmt::Parser,
     };
+    use crate::errors::combined::DronError;
     impl<'a> Parser<'a> {
         pub fn keyword_parse(
             &mut self,
             token: &TokenKeyword,
-        ) -> Result<Vec<KeywordStuff>, ParserError> {
+        ) -> Result<Vec<KeywordStuff>, DronError> {
             //let mut funcvec: Vec<FunDef> = Vec::new();
             let mut keywordstuffvec: Vec<KeywordStuff> = Vec::new();
             // if let Some(LexerCartegories::Keyword(TokenKeyword::Struct)) = self.peek() {
@@ -79,13 +80,13 @@ pub mod parse_keywords {
             }
             Ok(keywordstuffvec)
         }
-        pub fn parse_function(&mut self) -> Result<FunDef, ParserError> {
+        pub fn parse_function(&mut self) -> Result<FunDef, DronError> {
             // let mut depth = 0;
             self.expect(LexerCartegories::Keyword(TokenKeyword::Function))?;
             let fname = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.0.clone(),
-                Some(tokens) => return Err(ParserError::UnexpectedToken(tokens.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(tokens) => return Err(DronError::Parser(ParserError::UnexpectedToken(tokens.clone()))),
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftBrace))?;
             let mut args: Vec<Arguments> = Vec::new();
@@ -94,8 +95,8 @@ pub mod parse_keywords {
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
                     Some(LexerCartegories::Identifier(t)) => t.clone(),
-                    Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                    None => return Err(ParserError::UnexpectedEOF),
+                    Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                    None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
                 };
                 args.push(Arguments { name, arg_type });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
@@ -135,18 +136,18 @@ pub mod parse_keywords {
                         let value = self.parse_ret()?;
                         stack.last_mut().unwrap().push(Body::Return(value));
                     }
-                    other => return Err(ParserError::UnexpectedToken(other)),
+                    other => return Err(DronError::Parser(ParserError::UnexpectedToken(other))),
                 }
             }
             let body = stack.pop().unwrap();
             Ok(FunDef { fname, args, body })
         }
-        pub fn parse_struct(&mut self) -> Result<StructDef, ParserError> {
+        pub fn parse_struct(&mut self) -> Result<StructDef, DronError> {
             self.expect(LexerCartegories::Keyword(TokenKeyword::Struct))?;
             let name = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.clone(),
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut fields: Vec<Arguments> = Vec::new();
@@ -155,8 +156,8 @@ pub mod parse_keywords {
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
                     Some(LexerCartegories::Identifier(t)) => t.clone(),
-                    Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                    None => return Err(ParserError::UnexpectedEOF),
+                    Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                    None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
                 };
                 fields.push(Arguments { name, arg_type });
                 if let Some(LexerCartegories::Separator(TokenSeparator::Comma)) = self.peek() {
@@ -166,12 +167,12 @@ pub mod parse_keywords {
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(StructDef { name, fields })
         }
-        pub fn parse_enum(&mut self) -> Result<EnumDef, ParserError> {
+        pub fn parse_enum(&mut self) -> Result<EnumDef, DronError> {
             self.expect(LexerCartegories::Keyword(TokenKeyword::Enum))?;
             let name = match self.temporal() {
                 Some(LexerCartegories::Identifier(name)) => name.clone(),
-                Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(token) => return Err(DronError::Parser(ParserError::UnexpectedToken(token.clone()))),
+                None => return Err(DronError::Parser(ParserError::UnexpectedEOF)),
             };
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             let mut fields: Vec<TokenIdentifier> = Vec::new();
