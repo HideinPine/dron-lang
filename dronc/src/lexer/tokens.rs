@@ -128,7 +128,7 @@ pub mod literal_types {
     }
     #[derive(PartialEq, Debug, Clone)]
     pub enum BoolType {
-        TRUE,
-        FALSE,
+        True,
+        False,
     }
 }

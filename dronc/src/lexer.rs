@@ -72,8 +72,8 @@ pub mod eval {
     }
     pub fn comp_literal(lit: &str) -> Option<TokenLiteral> {
         match lit {
-            "true" => Some(TokenLiteral::Boolean(BoolType::TRUE)),
-            "false" => Some(TokenLiteral::Boolean(BoolType::FALSE)),
+            "true" => Some(TokenLiteral::Boolean(BoolType::True)),
+            "false" => Some(TokenLiteral::Boolean(BoolType::False)),
             _ => None,
         }
     }

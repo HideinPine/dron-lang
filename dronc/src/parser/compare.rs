@@ -25,8 +25,8 @@ pub mod parse_compare {
                     let right = self.get_value()?;
                     Ok(Comparison { left, token, right })
                 }
-                Some(other) => return Err(ParserError::UnexpectedToken(other)),
-                None => return Err(ParserError::UnexpectedEOF),
+                Some(other) => Err(ParserError::UnexpectedToken(other)),
+                None => Err(ParserError::UnexpectedEOF),
             }
         }
     }

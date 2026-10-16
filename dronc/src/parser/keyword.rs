@@ -30,6 +30,7 @@ pub mod definition {
         pub body: Vec<Body>,
     }
     #[allow(unused)]
+    #[allow(clippy::box_collection)]
     #[derive(Debug, Clone)]
     pub struct Block(Box<Vec<Body>>);
     impl Block {

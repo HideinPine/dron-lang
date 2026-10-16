@@ -55,7 +55,7 @@ pub mod definition {
 
 pub mod parse_state {
     use crate::lexer::tokens::tokentypes::{
-        LexerCartegories, TokenAssign, TokenIdentifier, TokenSeparator, TokenState,
+        LexerCartegories, TokenAssign, TokenSeparator, TokenState,
     };
     use crate::parser::{
         errors::parser_error::ParserError,
@@ -117,7 +117,7 @@ pub mod parse_state {
                 // TODO => Return above stuff not anything else..
                 None => {
                     return Ok(RetDef {
-                        id: Some(Value::Identifier(TokenIdentifier::new(String::new()))),
+                        id: None,
                     });
                 }
             };
@@ -150,7 +150,7 @@ pub mod parse_state {
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(IfStuff {
                 expression,
-                contains: contains,
+                contains,
             })
         }
         pub fn parse_if(&mut self) -> Result<IfStuff, ParserError> {
@@ -177,7 +177,7 @@ pub mod parse_state {
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
             Ok(IfStuff {
                 expression,
-                contains: contains,
+                contains,
             })
         }
         pub fn parse_else(&mut self) -> Result<ElseStuff, ParserError> {
@@ -201,7 +201,7 @@ pub mod parse_state {
             }
             let contains = stack.pop().unwrap();
             self.expect(LexerCartegories::Separator(TokenSeparator::RightCurl))?;
-            Ok(ElseStuff { contains: contains })
+            Ok(ElseStuff { contains, })
         }
         pub fn parse_loop(&mut self) -> Result<LoopStuff, ParserError> {
             self.expect(LexerCartegories::Statement(TokenState::Loop))?;

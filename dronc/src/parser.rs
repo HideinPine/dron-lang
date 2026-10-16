@@ -100,7 +100,7 @@ pub mod stmt {
                     Ok(Value::Identifier(id.clone()))
                 }
                 Some(token) => return Err(ParserError::UnexpectedToken(token.clone())),
-                None => return Err(ParserError::UnexpectedEOF),
+                None => Err(ParserError::UnexpectedEOF),
             }
         }
     }
