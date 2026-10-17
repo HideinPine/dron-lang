@@ -1,5 +1,4 @@
 pub mod combined {
-    use crate::errors::combined::DronError::Semantic;
     use crate::parser::par_err::{
         keyword_error::KeywordError, lexer_error::LexerError, parser_error::ParserError,
     };

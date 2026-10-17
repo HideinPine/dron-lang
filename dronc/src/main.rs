@@ -40,8 +40,8 @@ fn main() -> Result<(), DronError> {
     let tokenized = match tokenizer::tokenize(chars) {
         Ok(t) => t,
         Err(e) => {
-            println!("Error: {:?}", e);
-            return Ok(());
+            eprintln!("Error: {}", e);
+            std::process::exit(1)
         }
     };
 

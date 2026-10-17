@@ -3,6 +3,7 @@ pub mod lexer_error {
     pub enum LexerError {
         FloatError,
         InvalidDigitError(String),
+        NotYetImplemented,
     }
     impl std::error::Error for LexerError {}
     impl std::fmt::Display for LexerError {
@@ -10,6 +11,7 @@ pub mod lexer_error {
             match self {
                 LexerError::FloatError => write!(f, "Too many points.. not a valid decimal"),
                 LexerError::InvalidDigitError(e) => write!(f, "Invalid digit: {:?}", e),
+                LexerError::NotYetImplemented => write!(f, "Not yet implemented"),
             }
         }
     }
@@ -34,7 +36,11 @@ pub mod parser_error {
                 ParserError::UnexpectedToken(token) => write!(f, "Unexpected token: {:?}", token),
                 ParserError::UnexpectedEOF => write!(f, "Unexpected end of file"),
                 ParserError::NotYetImplemented => write!(f, "Not yet implemented"),
-                ParserError::InvalidToken(err) => write!(f, "Invalid token: {:?}", err),
+                ParserError::InvalidToken(err) => write!(
+                    f,
+                    "Invalid token: expected {:?} found {:?}",
+                    err.expected, err.found
+                ),
             }
         }
     }

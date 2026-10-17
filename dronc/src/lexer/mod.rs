@@ -135,13 +135,16 @@ pub mod eval {
 }
 
 pub mod tokenizer {
-    use crate::lexer::{
-        eval::{comp_operator, comp_sep, is_token_comp, is_token_oper, is_token_sep},
-        flush::{flush_int, flush_keyword, flush_oper},
-        tokens::tokentypes::LexerCartegories::{self, EndOfFile},
+    use crate::{
+        errors::combined::DronError,
+        lexer::{
+            eval::{comp_operator, comp_sep, is_token_comp, is_token_oper, is_token_sep},
+            flush::{flush_int, flush_keyword, flush_oper},
+            tokens::tokentypes::LexerCartegories::{self, EndOfFile},
+        },
+        parser::par_err::lexer_error::LexerError,
     };
-    use crate::parser::par_err::lexer_error::LexerError;
-    pub fn tokenize(chars: Vec<char>) -> Result<Vec<LexerCartegories>, LexerError> {
+    pub fn tokenize(chars: Vec<char>) -> Result<Vec<LexerCartegories>, DronError> {
         let mut keyword_value: Vec<char> = Vec::new();
         let mut oper_val: Vec<char> = Vec::new();
         let mut tokens: Vec<LexerCartegories> = Vec::new();
@@ -198,7 +201,7 @@ pub mod tokenizer {
                     flush_oper(&mut oper_val, &mut tokens);
                 }
             } else {
-                todo!()
+                return Err(DronError::Lexer(LexerError::NotYetImplemented));
             }
         }
         flush_keyword(&mut keyword_value, &mut tokens);
