@@ -1,7 +1,7 @@
 #![allow(unused)]
 use crate::errors::combined::DronError;
 use crate::lexer::tokenizer;
-use crate::parser::{par_err, stmt::analyse};
+use crate::parser::stmt::analyse;
 use owo_colors::OwoColorize;
 use std::{env, fs, time::Instant};
 mod errors;

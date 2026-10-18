@@ -101,7 +101,7 @@ pub mod tokentypes {
     pub struct Arguments {
         pub name: TokenIdentifier,
         // colon: TokenSeparator,
-        pub arg_type: TokenIdentifier,
+        pub arg_type: LiteralTypes,
     }
 }
 pub mod literal_types {

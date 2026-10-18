@@ -1,0 +1,15 @@
+
+
+fn hello() {
+    println("Hello, person");
+}
+
+fn main() {
+
+}
+//linear types by default
+const Y: u32 = 7;
+var x :u32 = 4;
+
+//affine types
+var x :!u32 = 7;

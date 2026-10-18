@@ -12,6 +12,11 @@ pub mod definition {
         Enum(EnumDef),
     }
     #[derive(Debug)]
+    pub enum IdStuff {
+        Key(KeywordStuff),
+        Var(VariableDef),
+    }
+    #[derive(Debug)]
     pub struct StructDef {
         pub name: TokenIdentifier,
         pub fields: Vec<Arguments>,
@@ -98,7 +103,7 @@ pub mod parse_keywords {
                 self.pos += 1;
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
-                    Some(LexerCartegories::Identifier(t)) => t.clone(),
+                    Some(LexerCartegories::LitType(t)) => t.clone(),
                     Some(token) => {
                         return Err(DronError::Parser(ParserError::UnexpectedToken(
                             token.clone(),
@@ -167,7 +172,7 @@ pub mod parse_keywords {
                 self.pos += 1;
                 self.expect(LexerCartegories::Separator(TokenSeparator::Colon))?;
                 let arg_type = match self.temporal() {
-                    Some(LexerCartegories::Identifier(t)) => t.clone(),
+                    Some(LexerCartegories::LitType(t)) => t.clone(),
                     Some(token) => {
                         return Err(DronError::Parser(ParserError::UnexpectedToken(
                             token.clone(),

@@ -1,4 +1,4 @@
-return 2 + 3 * 4 - 1;
-return 10 - 3 - 1;
-
-if 1 - 8 {} else {}
+var u: bool = true; 
+struct name {
+    y: u16,
+}
