@@ -1,6 +1,5 @@
 pub mod definition {
     use crate::lexer::tokens::tokentypes::{LexerCartegories, TokenIdentifier};
-    // TokenBlock + TokenSeparator(OpenCurl) + ... + TokenSeparator(CloseCurl)
     #[derive(Debug)]
     pub struct GhostDef {
         pub content: Option<Vec<LexerCartegories>>,

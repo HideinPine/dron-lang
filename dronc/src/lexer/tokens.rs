@@ -77,7 +77,7 @@ pub mod tokentypes {
         GreaterEqual,
         LessEqual,
     }
-    #[derive(Debug, PartialEq, Clone)]
+    #[derive(Debug, PartialEq, Eq, Hash, Clone)]
     pub struct TokenIdentifier(pub String);
     impl TokenIdentifier {
         pub fn new(val: String) -> Self {

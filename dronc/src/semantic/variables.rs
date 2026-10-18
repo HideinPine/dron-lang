@@ -17,21 +17,36 @@ pub mod types {
     }
 }
 pub mod var {
+    use std::collections::HashMap;
+
     use crate::{
         errors::combined::DronError,
+        lexer::tokens::tokentypes::TokenIdentifier,
         parser::{
-            keyword::definition::{EnumDef, FunDef, StructDef},
+            keyword::definition::{Block, Body, EnumDef, FunDef, KeywordStuff, StructDef},
             statements::definition::VariableDef,
         },
+        semantic::{initialize::{NameAble, BlockNames}, variables::types::type_look_up},
     };
-    #[derive(Debug)]
-    enum IdStuff {
-        Fun(FunDef),
-        Struct(StructDef),
-        Enum(EnumDef),
-        Var(VariableDef),
-    }
-    pub fn identifiers() -> Result<(), DronError> {
-        Ok(())
+    pub fn scope_checker(
+        function: FunDef,
+    ) -> Result<Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>>, DronError> {
+        let mut symb: Vec<HashMap<BlockNames,HashMap<TokenIdentifier, NameAble>>> = vec![HashMap::new()];
+        match function.body.as_slice() {
+            [Body::Block(block)] => {
+                symb.push(HashMap::new());
+                // scope_checker(function)?; //gives stack overflow due to recursive call
+            }
+            [Body::Var(smth)] => {
+                type_look_up(smth.clone())?;
+                symb.last_mut()
+                    .unwrap()
+                    .entry(BlockNames::Function)
+                    .or_insert_with(HashMap::new)
+                    .insert(smth.identifier.clone(), NameAble::Variable);
+            }
+            [..] => todo!(),
+        }
+        Ok(symb)
     }
 }

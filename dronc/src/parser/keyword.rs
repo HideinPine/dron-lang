@@ -11,11 +11,7 @@ pub mod definition {
         Func(FunDef),
         Enum(EnumDef),
     }
-    #[derive(Debug)]
-    pub enum IdStuff {
-        Key(KeywordStuff),
-        Var(VariableDef),
-    }
+
     #[derive(Debug)]
     pub struct StructDef {
         pub name: TokenIdentifier,
@@ -29,7 +25,7 @@ pub mod definition {
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftBrace + ... + TokenSeparator::RightBrace + TokenSeparator::LeftCurl + ... + TokenSeparator::RightCurl
     #[derive(Debug, Clone)]
     pub struct FunDef {
-        pub fname: String,
+        pub fname: TokenIdentifier,
         pub args: Vec<Arguments>,
         // Add return logic here for named return.. none named return etc.
         pub body: Vec<Body>,
@@ -89,7 +85,7 @@ pub mod parse_keywords {
             // let mut depth = 0;
             self.expect(LexerCartegories::Keyword(TokenKeyword::Function))?;
             let fname = match self.temporal() {
-                Some(LexerCartegories::Identifier(name)) => name.0.clone(),
+                Some(LexerCartegories::Identifier(name)) => name.clone(),
                 Some(tokens) => {
                     return Err(DronError::Parser(ParserError::UnexpectedToken(
                         tokens.clone(),
