@@ -4,17 +4,17 @@ pub mod definition {
         tokentypes::{TokenIdentifier, TokenLiteral},
     };
     use crate::parser::{compare::definition::Comparison, expressions::definition::Expression};
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct VariableDef {
         pub identifier: TokenIdentifier,
         pub kind: LiteralTypes,
         pub value: Value,
     }
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct RetDef {
         pub id: Option<Value>,
     }
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub enum Value {
         Identifier(TokenIdentifier),
         Literal(TokenLiteral),

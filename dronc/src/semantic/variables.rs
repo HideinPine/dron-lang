@@ -17,7 +17,7 @@ pub mod types {
     }
 }
 pub mod var {
-    use std::collections::HashMap;
+    use std::{collections::HashMap, thread::scope};
 
     use crate::{
         errors::combined::DronError,
@@ -26,26 +26,27 @@ pub mod var {
             keyword::definition::{Block, Body, EnumDef, FunDef, KeywordStuff, StructDef},
             statements::definition::VariableDef,
         },
-        semantic::{initialize::{NameAble, BlockNames}, variables::types::type_look_up},
+        semantic::{
+            initialize::{BlockNames, NameAble},
+            sem_err::type_error::SemanticErrors,
+            variables::types::type_look_up,
+        },
     };
     pub fn scope_checker(
         function: FunDef,
     ) -> Result<Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>>, DronError> {
-        let mut symb: Vec<HashMap<BlockNames,HashMap<TokenIdentifier, NameAble>>> = vec![HashMap::new()];
-        match function.body.as_slice() {
-            [Body::Block(block)] => {
-                symb.push(HashMap::new());
-                // scope_checker(function)?; //gives stack overflow due to recursive call
+        let mut symb: Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>> =
+            vec![HashMap::new()];
+        let fn_clone = function.clone();
+        for value in fn_clone.body {
+            match value {
+                Body::Block(_) => {
+                    symb.push(HashMap::new());
+                    scope_checker(function.clone())?;
+                },
+                
+                _ => todo!(),
             }
-            [Body::Var(smth)] => {
-                type_look_up(smth.clone())?;
-                symb.last_mut()
-                    .unwrap()
-                    .entry(BlockNames::Function)
-                    .or_insert_with(HashMap::new)
-                    .insert(smth.identifier.clone(), NameAble::Variable);
-            }
-            [..] => todo!(),
         }
         Ok(symb)
     }

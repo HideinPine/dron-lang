@@ -17,13 +17,13 @@ pub mod definition {
         pub name: TokenIdentifier,
         pub fields: Vec<Arguments>,
     }
-    #[derive(Debug)]
+    #[derive(Debug, PartialEq)]
     pub struct EnumDef {
         pub name: TokenIdentifier,
         pub fields: Vec<TokenIdentifier>,
     }
     // TokenKeyword + TokenIdentifier + TokenSeparator::LeftBrace + ... + TokenSeparator::RightBrace + TokenSeparator::LeftCurl + ... + TokenSeparator::RightCurl
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct FunDef {
         pub fname: TokenIdentifier,
         pub args: Vec<Arguments>,
@@ -32,14 +32,14 @@ pub mod definition {
     }
     #[allow(unused)]
     #[allow(clippy::box_collection)]
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct Block(Box<Vec<Body>>);
     impl Block {
         pub fn new(body: Vec<Body>) -> Self {
             Block(Box::new(body))
         }
     }
-    #[derive(Debug, Clone)]
+    #[derive(Debug, PartialEq, Clone)]
     pub enum Body {
         Func(FunDef),
         Var(VariableDef),

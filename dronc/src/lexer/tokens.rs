@@ -97,7 +97,7 @@ pub mod tokentypes {
         Continue,
         Break,
     }
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub struct Arguments {
         pub name: TokenIdentifier,
         // colon: TokenSeparator,

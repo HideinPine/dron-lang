@@ -2,7 +2,7 @@
 pub mod definition {
     use crate::lexer::tokens::tokentypes::{TokenIdentifier, TokenLiteral, TokenOperator};
 
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, PartialEq)]
     pub enum Expression {
         Identifier(TokenIdentifier),
         Literal(TokenLiteral),

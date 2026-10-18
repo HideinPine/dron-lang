@@ -1,6 +1,5 @@
 pub mod sem_err;
 mod variables;
-
 pub mod initialize {
     use crate::{
         errors::combined::DronError,
@@ -32,8 +31,9 @@ pub mod initialize {
         InlineFunction,
     }
     pub fn init(ast: AbstractSyntaxTree) -> Result<(), DronError> {
-        let mut symbol_table: Vec<HashMap<BlockNames ,HashMap<TokenIdentifier, NameAble>>> = vec![HashMap::new()];
-        let mut secnd_hash: Vec<HashMap<TokenIdentifier, NameAble>> = vec![HashMap::new()]; 
+        let mut symbol_table: Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>> =
+            vec![HashMap::new()];
+        let mut secnd_hash: Vec<HashMap<TokenIdentifier, NameAble>> = vec![HashMap::new()];
         for state in ast.states {
             match state {
                 StateStuff::Var(smth) => {
@@ -49,6 +49,7 @@ pub mod initialize {
             }
         }
         for keyword in ast.keywords {
+            #[allow(clippy::type_complexity)]
             match keyword {
                 KeywordStuff::Struct(smth) => {
                     symbol_table
