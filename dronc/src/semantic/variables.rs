@@ -27,27 +27,30 @@ pub mod var {
             statements::definition::VariableDef,
         },
         semantic::{
-            initialize::{BlockNames, NameAble},
+            initialize::{NameAble, ScopeStack},
             sem_err::type_error::SemanticErrors,
             variables::types::type_look_up,
         },
     };
-    pub fn scope_checker(
-        function: FunDef,
-    ) -> Result<Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>>, DronError> {
-        let mut symb: Vec<HashMap<BlockNames, HashMap<TokenIdentifier, NameAble>>> =
-            vec![HashMap::new()];
-        let fn_clone = function.clone();
-        for value in fn_clone.body {
+    // Function symbol table updater for each new or different function
+    pub fn function_stu(
+        smth: FunDef,
+        mut symbol_table: ScopeStack,
+    ) -> Result<ScopeStack, DronError> {
+        let name = smth.fname.clone();
+        symbol_table.add(name, NameAble::Function);
+        for value in smth.body {
             match value {
                 Body::Block(_) => {
-                    symb.push(HashMap::new());
-                    scope_checker(function.clone())?;
-                },
-                
+                    symbol_table.add(TokenIdentifier::new("Block1".to_string()), NameAble::Block);
+                }
+                Body::Var(var) => {
+                    type_look_up(var.clone())?;
+                }
                 _ => todo!(),
             }
         }
-        Ok(symb)
+        // scope_checker(smth, &mut symbol_table.clone())?;
+        Ok(symbol_table)
     }
 }
