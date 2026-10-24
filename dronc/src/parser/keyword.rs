@@ -33,7 +33,7 @@ pub mod definition {
     #[allow(unused)]
     #[allow(clippy::box_collection)]
     #[derive(Debug, Clone, PartialEq)]
-    pub struct Block(Box<Vec<Body>>);
+    pub struct Block(pub Box<Vec<Body>>);
     impl Block {
         pub fn new(body: Vec<Body>) -> Self {
             Block(Box::new(body))
@@ -113,6 +113,7 @@ pub mod parse_keywords {
                 }
             }
             self.expect(LexerCartegories::Separator(TokenSeparator::RightBrace))?;
+            // Return value logic here
             self.expect(LexerCartegories::Separator(TokenSeparator::LeftCurl))?;
             // depth += 1;let mut stack: Vec<Vec<Body>> = vec![Vec::new()];   // the function's body
             let mut stack: Vec<Vec<Body>> = vec![Vec::new()];

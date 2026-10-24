@@ -171,8 +171,9 @@ pub mod stmt {
         };
         println!("\n{:?}", tokens.blue().bold());
         let smth = parser.parse_program()?;
-        semantic::initialize::init(smth)?;
-        // println!("{:?}", sem);
+        println!("\n{:?}", smth.bold().green());
+        let sem = semantic::symbol_table::table_analyser::analyse_ast(smth)?;
+        println!("\n{:#?}", sem.bold().yellow());
         Ok(())
     }
 }
