@@ -20,32 +20,43 @@ pub mod table_def {
     use crate::{errors::combined::DronError, semantic::sem_err::type_error::SemanticErrors};
     use indexmap::{IndexMap, IndexSet};
 
+    macro_rules! impl_scope {
+        ($t: ty) => {
+            impl $t {
+                pub fn new() -> Self {
+                    Self {
+                        scopes: vec![IndexMap::new()],
+                    }
+                }
+                pub fn rem(&mut self) {
+                    self.scopes.pop();
+                }
+                pub fn add(&mut self) {
+                    self.scopes.push(IndexMap::new());
+                }
+            }
+        };
+    }
     #[derive(Debug, Clone)]
     pub enum SymbolTypes {
         Struct,
         Enum,
-        Function,
+        Function(Function),
         Variable,
         Constant,
         Block,
     }
+    #[derive(Debug, Clone)]
+    pub struct Function {
+        pub scopes: Vec<IndexMap<String, SymbolTypes>>,
+    }
+    impl_scope!(Function);
     #[derive(Debug)]
     pub struct SymbolTable {
         scopes: Vec<IndexMap<String, SymbolTypes>>,
     }
-
+    impl_scope!(SymbolTable);
     impl SymbolTable {
-        pub fn new() -> Self {
-            Self {
-                scopes: vec![IndexMap::new()],
-            }
-        }
-        pub fn rem(&mut self) {
-            self.scopes.pop();
-        }
-        pub fn add(&mut self) {
-            self.scopes.push(IndexMap::new());
-        }
         pub fn lookup(&self, name: &str) -> Result<(), DronError> {
             match self.scopes.iter().rev().find_map(|f| f.get(name)) {
                 Some(_) => Err(DronError::Semantic(SemanticErrors::ReservedVar)),
@@ -96,11 +107,6 @@ pub mod table_analyser {
                 BlockStuff::Unsafe(_) => todo!(),
                 BlockStuff::Ephemeral(_) => todo!(),
                 BlockStuff::Ghost(_) => todo!(),
-            }
-        }
-        for i in ast.states.iter() {
-            match i {
-                _ => todo!(),
             }
         }
         Ok(symbol_table)

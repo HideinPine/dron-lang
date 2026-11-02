@@ -1,5 +1,7 @@
 pub mod definition {
-    use crate::lexer::tokens::tokentypes::{Arguments, TokenIdentifier};
+    use std::ops::Deref;
+
+use crate::lexer::tokens::tokentypes::{Arguments, TokenIdentifier};
     use crate::parser::{
         expressions::definition::Expression,
         statements::definition::{RetDef, VariableDef},
@@ -34,9 +36,20 @@ pub mod definition {
     #[allow(clippy::box_collection)]
     #[derive(Debug, Clone, PartialEq)]
     pub struct Block(pub Box<Vec<Body>>);
+    // pub struct Block {
+    //     body: Vec<Body>,
+    //     pos: usize,
+    // }
     impl Block {
         pub fn new(body: Vec<Body>) -> Self {
-            Block(Box::new(body))
+            Block(Box::default())
+        }
+        
+    }
+    impl Deref for Block {
+        type Target = [Body];
+        fn deref(&self) -> &Self::Target {
+            &self.0
         }
     }
     #[derive(Debug, PartialEq, Clone)]
